@@ -1,0 +1,25 @@
+{
+  "name": "growatt-3ph-mod-tl3-x",
+  "version": "1.0.0",
+  "description": "Growatt 3PH MOD TL3-X via Modbus communication",
+  "main": "growatt-3ph-mod-tl3-x.ts",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "keywords": [],
+  "author": "Wim Haanstra",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.10.0",
+    "@types/express": "^4.17.1",
+    "eslint": "^9.10.0",
+    "globals": "^15.9.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.4.0"
+  },
+  "dependencies": {
+    "modbus-serial": "8.0.17",
+    "quantumhub-sdk": "1.0.0"
+  }
+}
