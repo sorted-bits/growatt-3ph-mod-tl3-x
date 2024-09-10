@@ -5,10 +5,7 @@ import { ModbusAPI } from './api/modbus/modbus-api';
 import { Solarman } from './api/solarman/solarman';
 import { DeviceRepository } from './repositories/device-repository/device-repository';
 import { ModbusDevice } from './repositories/device-repository/models/modbus-device';
-import {
-  ModbusRegister,
-  ModbusRegisterParseConfiguration,
-} from './repositories/device-repository/models/modbus-register';
+import { ModbusRegister, ModbusRegisterParseConfiguration } from './repositories/device-repository/models/modbus-register';
 
 class Growatt3PHModTL3X implements Device {
   private provider!: Provider;
@@ -139,6 +136,10 @@ class Growatt3PHModTL3X implements Device {
 
     const interval = this.reachable ? (updateInterval < 5 ? 5 : updateInterval) * 1000 : 60000;
 
+    if (!this.reachable) {
+      this.logger.warn('Device is not reachable, retrying in 60 seconds');
+    }
+
     this.readRegisterTimeout = await setTimeout(this.readRegisters.bind(this), interval);
   };
 
@@ -151,9 +152,7 @@ class Growatt3PHModTL3X implements Device {
 
     this.logger.trace(`Connecting to ${host}:${port} with unitId ${unitId} (solarman: ${solarman}, serial: ${serial})`);
 
-    this.api = solarman
-      ? new Solarman(this.logger, this.device, host, serial, 8899, 1)
-      : new ModbusAPI(this.logger, host, port, unitId, this.device);
+    this.api = solarman ? new Solarman(this.logger, this.device, host, serial, 8899, 1) : new ModbusAPI(this.logger, host, port, unitId, this.device);
 
     this.api?.setOnError(this.onError);
     this.api?.setOnDisconnect(this.onDisconnect);
