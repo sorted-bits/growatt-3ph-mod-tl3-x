@@ -35,7 +35,16 @@ class ModbusSolarman implements Device {
 
     this.logger.trace('Initializing ', this.device.name);
 
+    this.setAvailability(false);
+
     return true;
+  }
+
+  async setAvailability(availability: boolean): Promise<void> {
+    this.logger.trace('Setting availability:', availability);
+
+    this.reachable = availability;
+    this.provider.setAvailability(this.reachable);
   }
 
   async start(): Promise<void> {
@@ -63,8 +72,7 @@ class ModbusSolarman implements Device {
 
   private onError = async (error: unknown, register: ModbusRegister): Promise<void> => {
     if (error && (error as any)['name'] && (error as any)['name'] === 'TransactionTimedOutError') {
-      this.reachable = false;
-      await this.provider.setAvailability(false);
+      await this.setAvailability(false);
     } else {
       this.logger.error('Request failed', error);
     }
@@ -81,7 +89,9 @@ class ModbusSolarman implements Device {
       parseConfiguration.currentValue = result;
     }
 
-    this.reachable = true;
+    if (!this.reachable) {
+      this.setAvailability(true);
+    }
   };
 
   private onDisconnect = async (): Promise<void> => {
