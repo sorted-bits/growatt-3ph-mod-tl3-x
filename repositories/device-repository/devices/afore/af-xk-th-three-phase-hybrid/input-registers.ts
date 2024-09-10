@@ -102,6 +102,6 @@ export const inputRegisters: ModbusRegister[] = [
 
   ModbusRegister.default('status_code_running_state', 2500, 1, RegisterDataType.UINT16, AccessMode.ReadOnly),
 
-  ModbusRegister.scale('meter_power_total_battery_charge', 2011, 2, RegisterDataType.UINT32, 0.1),
-  ModbusRegister.scale('meter_power_total_battery_discharge', 2013, 2, RegisterDataType.UINT32, 0.1),
+  ModbusRegister.scale('meter_power_total_battery_charge', 2011, 2, RegisterDataType.UINT32, 0.1, AccessMode.ReadOnly, undefined, 2),
+  ModbusRegister.scale('meter_power_total_battery_discharge', 2013, 2, RegisterDataType.UINT32, 0.1, AccessMode.ReadOnly, undefined, 2),
 ];
