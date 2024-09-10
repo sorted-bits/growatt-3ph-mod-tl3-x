@@ -31,7 +31,7 @@ class Growatt3PHModTL3X implements Device {
 
     this.device = DeviceRepository.getInstance().getDeviceById('growatt-tl3') as ModbusDevice;
 
-    this.logger.info('Initializing Growatt 3PH Mod TL3-X');
+    this.logger.trace('Initializing Growatt 3PH Mod TL3-X');
 
     return true;
   }
@@ -43,18 +43,20 @@ class Growatt3PHModTL3X implements Device {
   }
 
   async valueChanged(attribute: string, value: any): Promise<void> {
-    this.logger.info(`Attribute ${attribute} changed to ${value}`);
+    this.logger.trace(`Attribute ${attribute} changed to ${value}`);
   }
 
   async stop(): Promise<void> {
+    this.logger.info('Stopping Growatt 3PH Mod TL3-X');
+
     if (this.api?.isConnected()) {
-      this.logger.info('Closing modbus connection');
+      this.logger.trace('Closing modbus connection');
       this.api.disconnect();
     }
   }
 
   async destroy(): Promise<void> {
-    this.logger.info('Destroying Growatt 3PH Mod TL3-X');
+    this.logger.trace('Destroying Growatt 3PH Mod TL3-X');
   }
 
   private onError = async (error: unknown, register: ModbusRegister): Promise<void> => {
@@ -81,7 +83,7 @@ class Growatt3PHModTL3X implements Device {
   };
 
   private onDisconnect = async (): Promise<void> => {
-    this.logger.info('Disconnected');
+    this.logger.warn('Disconnected');
 
     if (this.readRegisterTimeout) {
       clearTimeout(this.readRegisterTimeout);
@@ -147,7 +149,7 @@ class Growatt3PHModTL3X implements Device {
       clearTimeout(this.readRegisterTimeout);
     }
 
-    this.logger.info(`Connecting to ${host}:${port} with unitId ${unitId} (solarman: ${solarman}, serial: ${serial})`);
+    this.logger.trace(`Connecting to ${host}:${port} with unitId ${unitId} (solarman: ${solarman}, serial: ${serial})`);
 
     this.api = solarman
       ? new Solarman(this.logger, this.device, host, serial, 8899, 1)

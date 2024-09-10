@@ -1,10 +1,6 @@
 import { Logger } from 'quantumhub-sdk';
 
-export const readBit = (
-  buffer: Buffer,
-  byteIndex: number,
-  bitIndex: number
-): number => {
+export const readBit = (buffer: Buffer, byteIndex: number, bitIndex: number): number => {
   return (buffer[byteIndex] >> (7 - bitIndex)) & 1;
 };
 
@@ -15,11 +11,7 @@ export const readBitBE = (buffer: Buffer, bitIndex: number): number => {
   return (buffer[byteIndex] >> (7 - bitInByteIndex)) & 1;
 };
 
-export const writeBitsToBufferBE = (
-  buffer: Buffer,
-  bits: number[],
-  startBitIndex: number = 0
-): Buffer => {
+export const writeBitsToBufferBE = (buffer: Buffer, bits: number[], startBitIndex: number = 0): Buffer => {
   const result = Buffer.from(buffer);
 
   for (let i = 0; i < bits.length; i++) {
@@ -71,6 +63,6 @@ export const logBits = (logger: Logger, buffer: Buffer): void => {
       const bitValue = readBit(buffer, i, j);
       outputBits += bitValue + ' ';
     }
-    logger.info('Byte', i, 'bits', outputBits);
+    logger.trace('Byte', i, 'bits', outputBits);
   }
 };

@@ -55,7 +55,7 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
 
     const { value } = args;
 
-    origin.info('Setting max solar power to: ', value);
+    origin.trace('Setting max solar power to: ', value);
 
     if (value < 1000 || value > 7800) {
       origin.error('Value out of range');
@@ -65,7 +65,7 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
     try {
       const payload = register.calculatePayload(value, origin);
       const result = await client.writeRegister(register, payload);
-      origin.info('Output', result);
+      origin.trace('Output', result);
     } catch (error) {
       origin.error('Error enabling solar selling', error);
     }
@@ -81,7 +81,7 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
 
     const { value } = args;
 
-    origin.info('Setting max sell power to: ', value);
+    origin.trace('Setting max sell power to: ', value);
 
     if (value < 10 || value > 16000) {
       origin.error('Value out of range');
@@ -91,7 +91,7 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
     try {
       const payload = register.calculatePayload(value, origin);
       const result = await client.writeRegister(register, payload);
-      origin.info('Output', result);
+      origin.trace('Output', result);
     } catch (error) {
       origin.error('Error enabling solar selling', error);
     }
@@ -106,11 +106,11 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
 
     const { enabled } = args;
 
-    origin.info('Setting solar selling to: ', enabled);
+    origin.trace('Setting solar selling to: ', enabled);
 
     try {
       const result = await client.writeRegister(register, enabled ? 1 : 0);
-      origin.info('Output', result);
+      origin.trace('Output', result);
     } catch (error) {
       origin.error('Error enabling solar selling', error);
     }
@@ -135,7 +135,7 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
       return;
     }
 
-    origin.info('Setting energy pattern to: ', value);
+    origin.trace('Setting energy pattern to: ', value);
 
     const newBits = value === 'batt_first' ? [0] : [1];
 
@@ -153,7 +153,7 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
       logBits(origin, resultBuffer);
 
       const result = await client.writeBufferRegister(register, resultBuffer);
-      origin.info('Output', result);
+      origin.trace('Output', result);
     } catch (error) {
       origin.error('Error reading current value', error);
       return;
@@ -195,17 +195,17 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
       return;
     }
 
-    origin.info('Setting workmode to ', workmode, 'with zero export power to ', value, 'W');
+    origin.trace('Setting workmode to ', workmode, 'with zero export power to ', value, 'W');
 
     const workModeValue = workmodeDefinition.value;
 
     try {
       const modeResult = await client.writeRegister(modeRegister, workModeValue);
-      origin.info('Workmode output', modeResult);
+      origin.trace('Workmode output', modeResult);
 
       const payload = powerRegister.calculatePayload(value, origin);
       const powerResult = await client.writeRegister(powerRegister, payload);
-      origin.info('Power output', powerResult);
+      origin.trace('Power output', powerResult);
     } catch (error) {
       origin.error('Error setting workmode or power', error);
     }
@@ -233,12 +233,12 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
 
     try {
       const result = await client.writeBitsToRegister(modeRegister, bits, bitIndex);
-      origin.info('Set `grid peak shaving on` result', result);
+      origin.trace('Set `grid peak shaving on` result', result);
 
       if (result) {
         const payload = powerRegister.calculatePayload(value, origin);
         const powerResult = await client.writeRegister(powerRegister, payload);
-        origin.info('Power output', powerResult);
+        origin.trace('Power output', powerResult);
       }
     } catch (error) {
       origin.error('Error setting workmode or power', error);
@@ -260,7 +260,7 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
 
     try {
       const result = await client.writeBitsToRegister(modeRegister, bits, bitIndex);
-      origin.info('Set `grid peak shaving off` result', result);
+      origin.trace('Set `grid peak shaving off` result', result);
     } catch (error) {
       origin.error('Error setting grid peak shaving mode', error);
     }
@@ -275,12 +275,12 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
     }
 
     const { enabled } = args;
-    origin.info('Setting time of use enabled to: ', enabled);
+    origin.trace('Setting time of use enabled to: ', enabled);
     const bits = enabled === 'true' ? [1] : [0];
 
     try {
       const result = await client.writeBitsToRegister(register, bits, 0);
-      origin.info('Set time of use enabled result', result);
+      origin.trace('Set time of use enabled result', result);
     } catch (error) {
       origin.error('Error setting workmode or power', error);
     }
@@ -305,7 +305,7 @@ export class DeyeSunXKSG01HP3 extends ModbusDevice {
 
     try {
       const result = await client.writeBitsToRegister(register, bits, bitIndex);
-      origin.info('Set time of use for day enabled result', result);
+      origin.trace('Set time of use for day enabled result', result);
     } catch (error) {
       origin.error('Error setting workmode or power', error);
     }

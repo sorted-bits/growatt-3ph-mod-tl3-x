@@ -208,7 +208,7 @@ export class Solarman implements IAPI {
 
     if (buffer) {
       const result = this.device.converter(this.log, buffer, register);
-      this.log.info('Conversion result', result);
+      this.log.trace('Conversion result', result);
       return result;
     }
 
@@ -290,7 +290,7 @@ export class Solarman implements IAPI {
    */
   readBatch = async (batch: ModbusRegister[]): Promise<void> => {
     if (batch.length === 0) {
-      this.log.info('readBatch: Empty batch');
+      this.log.trace('readBatch: Empty batch');
       return;
     }
 

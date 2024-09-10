@@ -2,31 +2,16 @@ import fetch from 'node-fetch';
 import { Logger } from 'quantumhub-sdk';
 import { convertDeviceInfoToBlauHoffDeviceStatus } from './helpers/device-info-to-blauhoff-device-status';
 import { convertDeviceInformationToBlauHoffDevice } from './helpers/device-information-to-blauhoff-device';
-import {
-  createQueryBooleanResponse,
-  createQueryResponse,
-  isValidResponse,
-} from './helpers/is-valid-response';
+import { createQueryBooleanResponse, createQueryResponse, isValidResponse } from './helpers/is-valid-response';
 import { isNotInRange } from './helpers/number';
 import { BlauHoffDevice } from './models/blauhoff-device';
 import { BlauHoffDeviceStatus } from './models/blauhoff-device-status';
 import { QueryDeviceOptions } from './models/options/query-device.options';
-import {
-  Mode1,
-  Mode2,
-  Mode3,
-  Mode4,
-  Mode5,
-  Mode6,
-  Mode7,
-} from './models/options/set-mode.options';
+import { Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Mode7 } from './models/options/set-mode.options';
 import { BaseResponse } from './models/responses/base.response';
 import { BindDeviceResponse } from './models/responses/bind-device.response';
 import { GetDeviceListResponse } from './models/responses/get-device-list-response';
-import {
-  GetRatePowerResponse,
-  Rates,
-} from './models/responses/get-rate-power-response';
+import { GetRatePowerResponse, Rates } from './models/responses/get-rate-power-response';
 import { GetUserTokenResponse } from './models/responses/get-user-token-response';
 import { QueryDeviceResponse } from './models/responses/query-device.response';
 import { QueryResponse } from './models/responses/query-response';
@@ -119,10 +104,7 @@ export class BlauHoffAPI {
    * @param refreshInterval - The refresh interval in milliseconds.
    * @returns A Promise that resolves when the settings are updated.
    */
-  updateSettings = async (
-    accessId: string,
-    accessSecret: string
-  ): Promise<QueryResponse<boolean>> => {
+  updateSettings = async (accessId: string, accessSecret: string): Promise<QueryResponse<boolean>> => {
     this.setAuthenticationInfo(accessId, accessSecret);
     return this.fetchUserToken();
   };
@@ -132,9 +114,7 @@ export class BlauHoffAPI {
    *
    * @returns A promise that resolves to an array of BlauHoffDevice objects.
    */
-  queryDeviceList = async (
-    pageSize: number = 10
-  ): Promise<QueryResponse<BlauHoffDevice[]>> => {
+  queryDeviceList = async (pageSize: number = 10): Promise<QueryResponse<BlauHoffDevice[]>> => {
     const devices: BlauHoffDevice[] = [];
 
     const page1 = await this.queryDeviceListPage(1, pageSize);
@@ -179,11 +159,7 @@ export class BlauHoffAPI {
       deviceSn: device.serial,
     };
 
-    const response = await this.performRequest<QueryDeviceResponse>(
-      path,
-      'post',
-      params
-    );
+    const response = await this.performRequest<QueryDeviceResponse>(path, 'post', params);
 
     const result = createQueryResponse<BlauHoffDeviceStatus[][]>(response);
     if (!result.success) {
@@ -209,11 +185,7 @@ export class BlauHoffAPI {
       deviceSnList: [serial],
     };
 
-    const response = await this.performRequest<BindDeviceResponse>(
-      path,
-      'post',
-      params
-    );
+    const response = await this.performRequest<BindDeviceResponse>(path, 'post', params);
     const result = createQueryBooleanResponse(response);
 
     if (!result.success) {
@@ -230,15 +202,10 @@ export class BlauHoffAPI {
    * @param device - The BlauHoff device to query.
    * @returns A promise that resolves to the rate power of the device.
    */
-  getRatePower = async (
-    device: BlauHoffDevice
-  ): Promise<QueryResponse<Rates>> => {
+  getRatePower = async (device: BlauHoffDevice): Promise<QueryResponse<Rates>> => {
     const path = `/v1/hub/device/info?deviceSn=${device.serial}`;
 
-    const response = await this.performRequest<GetRatePowerResponse>(
-      path,
-      'get'
-    );
+    const response = await this.performRequest<GetRatePowerResponse>(path, 'get');
 
     const result = createQueryResponse<Rates>(response);
     if (!result.success) {
@@ -246,7 +213,7 @@ export class BlauHoffAPI {
       return result;
     }
 
-    this.log.info(`Got device info: ${JSON.stringify(result)}`);
+    this.log.trace(`Got device info: ${JSON.stringify(result)}`);
 
     result.data = response!.data;
     return result;
@@ -259,10 +226,7 @@ export class BlauHoffAPI {
    * @param options - The options for setting the mode1.
    * @returns A promise that resolves to a boolean indicating whether the mode1 was set successfully.
    */
-  setMode1 = async (
-    device: BlauHoffDevice,
-    options: Mode1
-  ): Promise<QueryResponse<boolean>> => {
+  setMode1 = async (device: BlauHoffDevice, options: Mode1): Promise<QueryResponse<boolean>> => {
     const { maxFeedInLimit, batCapMin } = options;
 
     if (isNotInRange(maxFeedInLimit, 0, 100)) {
@@ -293,13 +257,10 @@ export class BlauHoffAPI {
    * @param options - The options for setting the mode2.
    * @returns A promise that resolves to a boolean indicating whether the mode2 was set successfully.
    */
-  setMode2 = async (
-    device: BlauHoffDevice,
-    options: Mode2
-  ): Promise<QueryResponse<boolean>> => {
+  setMode2 = async (device: BlauHoffDevice, options: Mode2): Promise<QueryResponse<boolean>> => {
     const { batPower, batCapMin, timeout } = options;
 
-    this.log.info('Setting mode2', options);
+    this.log.trace('Setting mode2', options);
     if (isNotInRange(batPower, -6000, 0)) {
       this.log.error('batteryPower must be between -6000 and 0');
       return INVALID_PARAMETER_RESPONSE;
@@ -334,10 +295,7 @@ export class BlauHoffAPI {
    * @param options - The options for setting the mode3.
    * @returns A promise that resolves to a boolean indicating whether the mode3 was set successfully.
    */
-  setMode3 = async (
-    device: BlauHoffDevice,
-    options: Mode3
-  ): Promise<QueryResponse<boolean>> => {
+  setMode3 = async (device: BlauHoffDevice, options: Mode3): Promise<QueryResponse<boolean>> => {
     const { batPower, batCapMin, timeout } = options;
 
     if (isNotInRange(batPower, 0, 6000)) {
@@ -374,10 +332,7 @@ export class BlauHoffAPI {
    * @param options - The options for setting the mode4.
    * @returns A promise that resolves to a boolean indicating whether the mode4 was set successfully.
    */
-  setMode4 = async (
-    device: BlauHoffDevice,
-    options: Mode4
-  ): Promise<QueryResponse<boolean>> => {
+  setMode4 = async (device: BlauHoffDevice, options: Mode4): Promise<QueryResponse<boolean>> => {
     const { maxFeedInLimit, batCapMin, timeout } = options;
 
     if (isNotInRange(maxFeedInLimit, 0, 100)) {
@@ -414,10 +369,7 @@ export class BlauHoffAPI {
    * @param options - The options for setting the mode5.
    * @returns A promise that resolves to a boolean indicating whether the mode5 was set successfully.
    */
-  setMode5 = async (
-    device: BlauHoffDevice,
-    options: Mode5
-  ): Promise<QueryResponse<boolean>> => {
+  setMode5 = async (device: BlauHoffDevice, options: Mode5): Promise<QueryResponse<boolean>> => {
     const { maxFeedInLimit, batCapMin, timeout } = options;
 
     if (isNotInRange(maxFeedInLimit, 0, 100)) {
@@ -454,10 +406,7 @@ export class BlauHoffAPI {
    * @param options - The options for setting the mode6.
    * @returns A promise that resolves to a boolean indicating whether the mode6 was set successfully.
    */
-  setMode6 = async (
-    device: BlauHoffDevice,
-    options: Mode6
-  ): Promise<QueryResponse<boolean>> => {
+  setMode6 = async (device: BlauHoffDevice, options: Mode6): Promise<QueryResponse<boolean>> => {
     const { batPower, batPowerInvLimit, batCapMin, timeout } = options;
 
     if (isNotInRange(batPower, 0, 6000)) {
@@ -499,10 +448,7 @@ export class BlauHoffAPI {
    * @param options - The options for setting the mode7.
    * @returns A promise that resolves to a boolean indicating whether the mode7 was set successfully.
    */
-  setMode7 = async (
-    device: BlauHoffDevice,
-    options: Mode7
-  ): Promise<QueryResponse<boolean>> => {
+  setMode7 = async (device: BlauHoffDevice, options: Mode7): Promise<QueryResponse<boolean>> => {
     const { batPower, batCapMin, timeout } = options;
 
     if (isNotInRange(batPower, -6000, 0)) {
@@ -545,12 +491,7 @@ export class BlauHoffAPI {
       'Access-Secret': this.accessSecret,
     };
 
-    const response = await this.performRequest<GetUserTokenResponse>(
-      path,
-      'get',
-      undefined,
-      header
-    );
+    const response = await this.performRequest<GetUserTokenResponse>(path, 'get', undefined, header);
     const result = createQueryBooleanResponse(response);
 
     if (!result.success) {
@@ -562,16 +503,8 @@ export class BlauHoffAPI {
     return result;
   };
 
-  private genericSetMode = async (
-    mode: number,
-    path: string,
-    params: any
-  ): Promise<QueryResponse<boolean>> => {
-    const response = await this.performRequest<BaseResponse>(
-      path,
-      'post',
-      params
-    );
+  private genericSetMode = async (mode: number, path: string, params: any): Promise<QueryResponse<boolean>> => {
+    const response = await this.performRequest<BaseResponse>(path, 'post', params);
 
     const result = createQueryBooleanResponse(response);
 
@@ -580,7 +513,7 @@ export class BlauHoffAPI {
       return result;
     }
 
-    this.log.info(`setMode${mode} response: ${JSON.stringify(response)}`);
+    this.log.trace(`setMode${mode} response: ${JSON.stringify(response)}`);
     result.data = true;
     return result;
   };
@@ -591,10 +524,7 @@ export class BlauHoffAPI {
    * @param page - The page number to retrieve.
    * @returns A promise that resolves to an array of BlauHoffDevice objects representing the devices on the page.
    */
-  private queryDeviceListPage = async (
-    page: number,
-    pageSize: number
-  ): Promise<GetDeviceListResponse | undefined> => {
+  private queryDeviceListPage = async (page: number, pageSize: number): Promise<GetDeviceListResponse | undefined> => {
     const path = '/v1/hub/device/info/list';
 
     const params = {
@@ -602,11 +532,7 @@ export class BlauHoffAPI {
       pageNum: page,
     };
 
-    const data = await this.performRequest<GetDeviceListResponse>(
-      path,
-      'post',
-      params
-    );
+    const data = await this.performRequest<GetDeviceListResponse>(path, 'post', params);
 
     return data;
   };
@@ -641,9 +567,7 @@ export class BlauHoffAPI {
     params: any | undefined = undefined,
     headers?: any
   ): Promise<Type | undefined> => {
-    this.log.info(
-      `Performing request to ${path} with params: ${JSON.stringify(params)}`
-    );
+    this.log.trace(`Performing request to ${path} with params: ${JSON.stringify(params)}`);
     const header = headers ?? this.authorizationHeader();
 
     const options = params
@@ -667,9 +591,7 @@ export class BlauHoffAPI {
 
       const data = (await response.json()) as BaseResponse;
 
-      this.log.info(
-        `Response for ${path} was ${JSON.stringify(data).length} bytes`
-      );
+      this.log.trace(`Response for ${path} was ${JSON.stringify(data).length} bytes`);
 
       return data as any;
     } catch (error) {

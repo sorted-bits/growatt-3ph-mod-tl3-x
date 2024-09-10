@@ -95,7 +95,7 @@ export class ModbusAPI implements IAPI {
    * @returns A promise that resolves to a boolean indicating whether the connection was successful.
    */
   connect = async (): Promise<boolean> => {
-    this.log.info('Connecting to Modbus host:', this.host, 'port:', this.port, 'unitId:', this.unitId);
+    this.log.trace('Connecting to Modbus host:', this.host, 'port:', this.port, 'unitId:', this.unitId);
     this.disconnecting = false;
 
     try {
@@ -104,7 +104,7 @@ export class ModbusAPI implements IAPI {
       });
 
       socket.on('data', (data) => {
-        this.log.info('Received data', data.toString());
+        this.log.trace('Received data', data.toString());
       });
 
       await this.client.connectTCP(this.host, {
@@ -166,7 +166,7 @@ export class ModbusAPI implements IAPI {
         ? await this.client.readInputRegisters(register.address, register.length)
         : await this.client.readHoldingRegisters(register.address, register.length);
 
-    this.log.info('Reading address', register.address, ':', data);
+    this.log.trace('Reading address', register.address, ':', data);
 
     if (data && data.buffer) {
       return data.buffer;
@@ -186,7 +186,7 @@ export class ModbusAPI implements IAPI {
 
     if (buffer) {
       const result = this.device.converter(this.log, buffer, register);
-      this.log.info('Conversion result', result);
+      this.log.trace('Conversion result', result);
       return result;
     }
 
@@ -230,7 +230,7 @@ export class ModbusAPI implements IAPI {
     for (const value of values) {
       if (!Buffer.isBuffer(value)) {
         const valid = validateValue(value, register.dataType);
-        this.log.info(
+        this.log.trace(
           'Validating value',
           value,
           'for register',
@@ -247,11 +247,11 @@ export class ModbusAPI implements IAPI {
       }
     }
 
-    this.log.info('Writing to address', register.address, ':', values);
+    this.log.trace('Writing to address', register.address, ':', values);
 
     try {
       const result = await this.client.writeRegisters(register.address, values);
-      this.log.info('Output', result.address);
+      this.log.trace('Output', result.address);
       return true;
     } catch (error) {
       this.log.error('Error writing to register', error);
@@ -288,11 +288,11 @@ export class ModbusAPI implements IAPI {
    * @returns A promise that resolves to a boolean indicating whether the write operation was successful.
    */
   writeBufferRegister = async (register: ModbusRegister, buffer: Buffer): Promise<boolean> => {
-    this.log.info('Writing to register', register.address, buffer, typeof buffer);
+    this.log.trace('Writing to register', register.address, buffer, typeof buffer);
 
     try {
       const result = await this.client.writeRegisters(register.address, buffer);
-      this.log.info('Output', result.address);
+      this.log.trace('Output', result.address);
     } catch (error) {
       this.log.error('Error writing to register', error);
       return false;
@@ -319,7 +319,7 @@ export class ModbusAPI implements IAPI {
       await this.readBatch([register], RegisterType.Holding);
     }
 
-    this.log.info('Finished reading registers');
+    this.log.trace('Finished reading registers');
   };
 
   /**
@@ -404,7 +404,7 @@ export class ModbusAPI implements IAPI {
     }
 
     if (value === undefined || registerType === undefined || !register) {
-      this.log.info('Wait, something is missing', value, registerType, register);
+      this.log.warn('Wait, something is missing', value, registerType, register);
       return;
     }
 
@@ -422,12 +422,12 @@ export class ModbusAPI implements IAPI {
       return;
     }
 
-    this.log.info('Device', JSON.stringify(device.device, null, 2));
+    this.log.trace('Device', JSON.stringify(device.device, null, 2));
 
-    this.log.info('write_value_to_register', value, registerType, register);
+    this.log.trace('write_value_to_register', value, registerType, register);
 
     const result = await this.writeRegister(foundRegister, value);
-    this.log.info('Write result', result);
+    this.log.trace('Write result', result);
   };
 
   /**
@@ -463,7 +463,7 @@ export class ModbusAPI implements IAPI {
     const byteIndex = readBuffer.length - 1 - Math.floor(bitIndex / 8);
     const startBitIndex = bitIndex % 8;
 
-    this.log.info('writeBitsToRegister', register.registerType, bits, startBitIndex, byteIndex);
+    this.log.trace('writeBitsToRegister', register.registerType, bits, startBitIndex, byteIndex);
 
     const result = writeBitsToBuffer(readBuffer, byteIndex, bits, startBitIndex);
     logBits(this.log, result);

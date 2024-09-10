@@ -73,7 +73,7 @@ export class AforeAFXKTH extends ModbusDevice {
       const commandOutput = await client.writeBufferRegister(commandRegister, commandBuffer);
       const emsModeOutput = await client.writeRegister(emsRegister, 4);
 
-      origin.info('Command and power output', emsModeOutput, commandOutput, powerOutput);
+      origin.trace('Command and power output', emsModeOutput, commandOutput, powerOutput);
     } catch (error) {
       origin.error('Error writing to register', error);
     }
@@ -106,7 +106,7 @@ export class AforeAFXKTH extends ModbusDevice {
     try {
       const emsModeOutput = await client.writeRegister(emsRegister, modeNumber);
 
-      origin.info('setEmsModeOutput', emsModeOutput);
+      origin.trace('setEmsModeOutput', emsModeOutput);
     } catch (error) {
       origin.error('Error writing to register', error);
     }
@@ -164,7 +164,7 @@ export class AforeAFXKTH extends ModbusDevice {
 
     try {
       const output = await client.writeBitsToRegister(register, [0], 4);
-      origin.info('Output', output);
+      origin.trace('Output', output);
     } catch (error) {
       origin.error('Error writing to register', error);
     }
@@ -199,7 +199,7 @@ export class AforeAFXKTH extends ModbusDevice {
         acsocmaxchgRegister.calculatePayload(acsocmaxchg, origin)
       );
 
-      origin.info('Output', output, acpchgmaxOutput, acsocmaxchgOutput);
+      origin.trace('Output', output, acpchgmaxOutput, acsocmaxchgOutput);
     } catch (error) {
       origin.error('Error writing to register', error);
     }
