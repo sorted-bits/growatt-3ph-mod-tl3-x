@@ -7,7 +7,7 @@ import { DeviceRepository } from './repositories/device-repository/device-reposi
 import { ModbusDevice } from './repositories/device-repository/models/modbus-device';
 import { ModbusRegister, ModbusRegisterParseConfiguration } from './repositories/device-repository/models/modbus-register';
 
-class Growatt3PHModTL3X implements Device {
+class ModbusSolarman implements Device {
   private provider!: Provider;
   private logger!: Logger;
 
@@ -18,23 +18,28 @@ class Growatt3PHModTL3X implements Device {
   private lastValidRequest?: DateTime;
   private runningRequest: boolean = false;
 
-  id: string = 'growatt-3ph-mod-tl3-x';
-
   private readRegisterTimeout: undefined | ReturnType<typeof setTimeout>;
 
   async init(provider: Provider, logger: Logger): Promise<boolean> {
     this.provider = provider;
     this.logger = logger;
 
-    this.device = DeviceRepository.getInstance().getDeviceById('growatt-tl3') as ModbusDevice;
+    const { device } = this.provider.getConfig();
 
-    this.logger.trace('Initializing Growatt 3PH Mod TL3-X');
+    this.device = DeviceRepository.getInstance().getDeviceById(device) as ModbusDevice;
+
+    if (!this.device) {
+      this.logger.error('Device not found');
+      return false;
+    }
+
+    this.logger.trace('Initializing ', this.device.name);
 
     return true;
   }
 
   async start(): Promise<void> {
-    this.logger.info('Starting Growatt 3PH Mod TL3-X');
+    this.logger.info('Starting ModbusSolarman');
 
     await this.connect();
   }
@@ -44,7 +49,7 @@ class Growatt3PHModTL3X implements Device {
   }
 
   async stop(): Promise<void> {
-    this.logger.info('Stopping Growatt 3PH Mod TL3-X');
+    this.logger.info('Stopping ModbusSolarman');
 
     if (this.api?.isConnected()) {
       this.logger.trace('Closing modbus connection');
@@ -53,7 +58,7 @@ class Growatt3PHModTL3X implements Device {
   }
 
   async destroy(): Promise<void> {
-    this.logger.trace('Destroying Growatt 3PH Mod TL3-X');
+    this.logger.trace('Destroying ModbusSolarman');
   }
 
   private onError = async (error: unknown, register: ModbusRegister): Promise<void> => {
@@ -166,4 +171,4 @@ class Growatt3PHModTL3X implements Device {
   };
 }
 
-export default Growatt3PHModTL3X;
+export default ModbusSolarman;

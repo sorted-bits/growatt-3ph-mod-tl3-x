@@ -35,14 +35,7 @@ export class ModbusRegisterParseConfiguration {
   currentValue: any;
   decimals?: number;
 
-  constructor(
-    register: ModbusRegister,
-    capabilityId: string,
-    transformation?: Transformation,
-    scale?: number,
-    options: ModbusRegisterOptions = {},
-    decimals?: number
-  ) {
+  constructor(register: ModbusRegister, capabilityId: string, transformation?: Transformation, scale?: number, options: ModbusRegisterOptions = {}, decimals?: number) {
     this.register = register;
     this.capabilityId = capabilityId;
     this.transformation = transformation;
@@ -63,7 +56,7 @@ export class ModbusRegisterParseConfiguration {
 
       let result = numberValue * this.scale;
 
-      if (this.decimals) {
+      if (this.decimals !== undefined) {
         var p = Math.pow(10, this.decimals);
         result = Math.round(result * p) / p;
       }
@@ -142,12 +135,7 @@ export class ModbusRegister {
     return this.parseConfigurations.some((config) => config.capabilityId === capabilityId);
   }
 
-  constructor(
-    address: number,
-    length: number,
-    dataType: RegisterDataType,
-    accessMode: AccessMode = AccessMode.ReadOnly
-  ) {
+  constructor(address: number, length: number, dataType: RegisterDataType, accessMode: AccessMode = AccessMode.ReadOnly) {
     this.address = address;
     this.length = length;
     this.dataType = dataType;
@@ -166,11 +154,7 @@ export class ModbusRegister {
     return this;
   };
 
-  addTransform = (
-    capabilityId: string,
-    transformation: Transformation,
-    options?: ModbusRegisterOptions
-  ): ModbusRegister => {
+  addTransform = (capabilityId: string, transformation: Transformation, options?: ModbusRegisterOptions): ModbusRegister => {
     const configuration = new ModbusRegisterParseConfiguration(this, capabilityId, transformation, undefined, options);
     this.parseConfigurations.push(configuration);
     return this;
@@ -194,43 +178,15 @@ export class ModbusRegister {
     return parseConfiguration.calculatePayload(value, log);
   }
 
-  static transform(
-    capabilityId: string,
-    address: number,
-    length: number,
-    dataType: RegisterDataType,
-    transformation: Transformation,
-    accessMode: AccessMode = AccessMode.ReadOnly,
-    options: ModbusRegisterOptions = {}
-  ) {
-    return new ModbusRegister(address, length, dataType, accessMode).addTransform(
-      capabilityId,
-      transformation,
-      options
-    );
+  static transform(capabilityId: string, address: number, length: number, dataType: RegisterDataType, transformation: Transformation, accessMode: AccessMode = AccessMode.ReadOnly, options: ModbusRegisterOptions = {}) {
+    return new ModbusRegister(address, length, dataType, accessMode).addTransform(capabilityId, transformation, options);
   }
 
-  static default(
-    capabilityId: string,
-    address: number,
-    length: number,
-    dataType: RegisterDataType,
-    accessMode: AccessMode = AccessMode.ReadOnly,
-    options: ModbusRegisterOptions = {}
-  ) {
+  static default(capabilityId: string, address: number, length: number, dataType: RegisterDataType, accessMode: AccessMode = AccessMode.ReadOnly, options: ModbusRegisterOptions = {}) {
     return new ModbusRegister(address, length, dataType, accessMode).addDefault(capabilityId, options);
   }
 
-  static scale(
-    capabilityId: string,
-    address: number,
-    length: number,
-    dataType: RegisterDataType,
-    scale: number,
-    accessMode: AccessMode = AccessMode.ReadOnly,
-    options: ModbusRegisterOptions = {},
-    decimals?: number
-  ) {
+  static scale(capabilityId: string, address: number, length: number, dataType: RegisterDataType, scale: number, accessMode: AccessMode = AccessMode.ReadOnly, options: ModbusRegisterOptions = {}, decimals?: number) {
     return new ModbusRegister(address, length, dataType, accessMode).addScale(capabilityId, scale, options, decimals);
   }
 }
