@@ -1,0 +1,217 @@
+module:
+  name: modbus-solarman
+  version: 1.0.0
+  description: QuantumHub module for Growatt and Afore inverters
+  author: Wim Haanstra
+  entry: modbus-solarman.ts
+
+attributes:
+  serial:
+    name: Serial
+    type: sensor
+
+  status_code_run_mode:
+    name: Run Mode
+    type: sensor
+
+  status_code_running_state:
+    name: Running State
+    type: sensor
+
+  status_text_charge_command:
+    name: Charge Command
+    type: sensor
+
+  status_text_ems_mode:
+    name: EMS Mode
+    type: sensor
+
+  status_text_battery_state:
+    name: Battery State
+    type: sensor
+
+  status_text_inverter_name:
+    name: Inverter Name
+    type: sensor
+
+  status_text_hard_name:
+    name: Hardware Name
+    type: sensor
+
+  status_text_ac_timing_charge:
+    name: AC Timing Charge
+    type: sensor
+
+  status_text_timing_charge:
+    name: Timing Charge
+    type: sensor
+
+  status_text_timing_discharge:
+    name: Timing Discharge
+    type: sensor
+
+  measure_voltage_pv1:
+    name: Voltage PV1
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_voltage_pv2:
+    name: Voltage PV1
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_voltage_grid_l1:
+    name: Voltage L1
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_voltage_grid_l2:
+    name: Voltage L2
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_voltage_grid_l3:
+    name: Voltage L3
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_power:
+    name: Power
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_ac:
+    name: Power AC
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_pv:
+    name: Power PV
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_pv1:
+    name: Power PV1
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_pv2:
+    name: Power PV2
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  meter_power_today:
+    name: Power Today
+    type: sensor
+    device_class: power
+    state_class: total_increasing
+    unit_of_measurement: kWh
+
+  meter_power:
+    name: Power Total
+    type: sensor
+    device_class: power
+    state_class: total
+    unit_of_measurement: kWh
+
+  measure_power_battery:
+    name: Power Battery
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_percentage_bat_soc:
+    name: Battery SOC
+    type: sensor
+    device_class: battery
+    state_class: measurement
+    unit_of_measurement: '%'
+
+  measure_temperature_battery1:
+    name: Temperature Battery 1
+    type: sensor
+    device_class: temperature
+    state_class: measurement
+    unit_of_measurement: '°C'
+
+  meter_power_daily_battery_charge:
+    name: Daily Battery Charge
+    type: sensor
+    device_class: power
+    state_class: total_increasing
+    unit_of_measurement: kWh
+
+  meter_power_daily_battery_discharge:
+    name: Daily Battery Discharge
+    type: sensor
+    device_class: power
+    state_class: total_increasing
+    unit_of_measurement: kWh
+
+  meter_power_total_battery_charge:
+    name: Total Battery Charge
+    type: sensor
+    device_class: power
+    state_class: total
+    unit_of_measurement: kWh
+
+  meter_power_total_battery_discharge:
+    name: Total Battery Discharge
+    type: sensor
+    device_class: power
+    state_class: total
+    unit_of_measurement: kWh
+
+  measure_power_grid_active_power:
+    name: Grid Active Power
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_grid_total_load:
+    name: Grid Total Load
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_charge_instructions:
+    name: Charge command power
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_percentage_acpchgmax:
+    name: AC charge max
+    type: sensor
+    state_class: measurement
+    unit_of_measurement: '%'
+
+  measure_percentage_acsocmaxchg:
+    name: AC SOC max charge
+    type: sensor
+    state_class: measurement
+    unit_of_measurement: '%'

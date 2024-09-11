@@ -20,7 +20,7 @@ class ModbusSolarman implements Device {
 
   private readRegisterTimeout: undefined | ReturnType<typeof setTimeout>;
 
-  async init(provider: Provider, logger: Logger): Promise<boolean> {
+  init = async (provider: Provider, logger: Logger): Promise<boolean> => {
     this.provider = provider;
     this.logger = logger;
 
@@ -38,37 +38,37 @@ class ModbusSolarman implements Device {
     this.setAvailability(false);
 
     return true;
-  }
+  };
 
-  async setAvailability(availability: boolean): Promise<void> {
+  setAvailability = async (availability: boolean): Promise<void> => {
     this.logger.trace('Setting availability:', availability);
 
     this.reachable = availability;
     this.provider.setAvailability(this.reachable);
-  }
+  };
 
-  async start(): Promise<void> {
+  start = async (): Promise<void> => {
     this.logger.info('Starting ModbusSolarman');
 
     await this.connect();
-  }
+  };
 
-  async valueChanged(attribute: string, value: any): Promise<void> {
+  valueChanged = async (attribute: string, value: any): Promise<void> => {
     this.logger.trace(`Attribute ${attribute} changed to ${value}`);
-  }
+  };
 
-  async stop(): Promise<void> {
+  stop = async (): Promise<void> => {
     this.logger.info('Stopping ModbusSolarman');
 
     if (this.api?.isConnected()) {
       this.logger.trace('Closing modbus connection');
       this.api.disconnect();
     }
-  }
+  };
 
-  async destroy(): Promise<void> {
+  destroy = async (): Promise<void> => {
     this.logger.trace('Destroying ModbusSolarman');
-  }
+  };
 
   private onError = async (error: unknown, register: ModbusRegister): Promise<void> => {
     if (error && (error as any)['name'] && (error as any)['name'] === 'TransactionTimedOutError') {
@@ -145,6 +145,14 @@ class ModbusSolarman implements Device {
 
     try {
       await this.api.readRegistersInBatch();
+    } catch (error: Error | any) {
+      this.logger.error('Failed to read registers', error);
+      await this.setAvailability(false);
+
+      if (error && error.name && error.name === 'PortNotOpenError') {
+        await this.connect();
+        return;
+      }
     } finally {
       this.runningRequest = false;
     }
@@ -159,6 +167,8 @@ class ModbusSolarman implements Device {
   };
 
   connect = async (): Promise<void> => {
+    this.runningRequest = false;
+
     const { host, port, unitId, solarman, serial } = this.provider.getConfig();
 
     if (this.readRegisterTimeout) {
@@ -176,6 +186,7 @@ class ModbusSolarman implements Device {
     const isOpen = await this.api.connect();
 
     if (isOpen) {
+      this.reachable = true;
       await this.readRegisters();
     }
   };

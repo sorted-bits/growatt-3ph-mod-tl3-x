@@ -4,7 +4,9 @@
   "description": "Growatt 3PH MOD TL3-X via Modbus communication",
   "main": "modbus-solarman.ts",
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "copy-files": "copyfiles -V **/*.yaml dist/",
+    "build": "tsc && npm run copy-files"
   },
   "keywords": [],
   "author": "Wim Haanstra",
@@ -18,6 +20,7 @@
     "globals": "^15.9.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4",
+    "copyfiles": "2.4.1",
     "typescript-eslint": "^8.4.0"
   },
   "dependencies": {
