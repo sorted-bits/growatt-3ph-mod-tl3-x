@@ -351,9 +351,8 @@ export class ModbusAPI implements IAPI {
         startOffset = end;
       }
     } catch (error: any) {
-      this.log.error('Error reading batch', JSON.stringify(error));
-
       if (!error.name || error.name !== 'TransactionTimedOutError') {
+        this.log.error('Error reading batch', JSON.stringify(error));
         if (!this.client.isOpen) {
           this.disconnecting = true;
 
