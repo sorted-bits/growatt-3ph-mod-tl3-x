@@ -14,10 +14,7 @@ import { createRegisterBatches } from '../../repositories/device-repository/help
 import { AccessMode } from '../../repositories/device-repository/models/enum/access-mode';
 import { RegisterType } from '../../repositories/device-repository/models/enum/register-type';
 import { ModbusDevice } from '../../repositories/device-repository/models/modbus-device';
-import {
-  ModbusRegister,
-  ModbusRegisterParseConfiguration,
-} from '../../repositories/device-repository/models/modbus-register';
+import { ModbusRegister, ModbusRegisterParseConfiguration } from '../../repositories/device-repository/models/modbus-register';
 import { IAPI } from '../iapi';
 
 /**
@@ -41,9 +38,7 @@ export class ModbusAPI implements IAPI {
     return this.device;
   }
 
-  setOnDataReceived(
-    onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>
-  ): void {
+  setOnDataReceived(onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>): void {
     this.onDataReceived = onDataReceived;
   }
 
@@ -161,10 +156,7 @@ export class ModbusAPI implements IAPI {
      * @returns A promise that resolves to the read data or undefined if the read operation failed.
      */
   readAddressWithoutConversion = async (register: ModbusRegister): Promise<Buffer | undefined> => {
-    const data =
-      register.registerType === RegisterType.Input
-        ? await this.client.readInputRegisters(register.address, register.length)
-        : await this.client.readHoldingRegisters(register.address, register.length);
+    const data = register.registerType === RegisterType.Input ? await this.client.readInputRegisters(register.address, register.length) : await this.client.readHoldingRegisters(register.address, register.length);
 
     this.log.trace('Reading address', register.address, ':', data);
 
@@ -230,16 +222,7 @@ export class ModbusAPI implements IAPI {
     for (const value of values) {
       if (!Buffer.isBuffer(value)) {
         const valid = validateValue(value, register.dataType);
-        this.log.trace(
-          'Validating value',
-          value,
-          'for register',
-          register.address,
-          'with data type',
-          register.dataType,
-          'result',
-          valid
-        );
+        this.log.trace('Validating value', value, 'for register', register.address, 'with data type', register.dataType, 'result', valid);
 
         if (!valid) {
           return false;
@@ -345,14 +328,10 @@ export class ModbusAPI implements IAPI {
     const firstRegister = batch[0];
     const lastRegister = batch[batch.length - 1];
 
-    const length =
-      batch.length > 1 ? lastRegister.address + lastRegister.length - firstRegister.address : batch[0].length;
+    const length = batch.length > 1 ? lastRegister.address + lastRegister.length - firstRegister.address : batch[0].length;
 
     try {
-      const results =
-        registerType === RegisterType.Input
-          ? await this.client.readInputRegisters(firstRegister.address, length)
-          : await this.client.readHoldingRegisters(firstRegister.address, length);
+      const results = registerType === RegisterType.Input ? await this.client.readInputRegisters(firstRegister.address, length) : await this.client.readHoldingRegisters(firstRegister.address, length);
 
       let startOffset = 0;
       for (const register of batch) {
@@ -372,8 +351,16 @@ export class ModbusAPI implements IAPI {
         startOffset = end;
       }
     } catch (error: any) {
+      this.log.error('Error reading batch', JSON.stringify(error));
+
       if (!error.name || error.name !== 'TransactionTimedOutError') {
-        this.log.error('Error reading batch', error);
+        if (!this.client.isOpen) {
+          this.disconnecting = true;
+
+          this.disconnect();
+          this.log.warn('Client connection was closed, reconnecting');
+          await this.connect();
+        }
       }
     }
   };

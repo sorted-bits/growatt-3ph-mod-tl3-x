@@ -41,10 +41,12 @@ class ModbusSolarman implements Device {
   };
 
   setAvailability = async (availability: boolean): Promise<void> => {
-    this.logger.trace('Setting availability:', availability);
+    if (this.reachable !== availability) {
+      this.logger.trace('Setting availability:', availability);
 
-    this.reachable = availability;
-    this.provider.setAvailability(this.reachable);
+      this.reachable = availability;
+      this.provider.setAvailability(this.reachable);
+    }
   };
 
   start = async (): Promise<void> => {
@@ -186,7 +188,7 @@ class ModbusSolarman implements Device {
     const isOpen = await this.api.connect();
 
     if (isOpen) {
-      this.reachable = true;
+      this.setAvailability(true);
       await this.readRegisters();
     }
   };
