@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { Device, Logger, Provider } from 'quantumhub-sdk';
+import { Device, Provider } from 'quantumhub-sdk';
 import { IAPI } from './api/iapi';
 import { ModbusAPI } from './api/modbus/modbus-api';
 import { Solarman } from './api/solarman/solarman';
@@ -9,7 +9,6 @@ import { ModbusRegister, ModbusRegisterParseConfiguration } from './repositories
 
 class ModbusSolarman implements Device {
   private provider!: Provider;
-  private logger!: Logger;
 
   private api?: IAPI;
   private reachable: boolean = false;
@@ -20,20 +19,19 @@ class ModbusSolarman implements Device {
 
   private readRegisterTimeout: undefined | ReturnType<typeof setTimeout>;
 
-  init = async (provider: Provider, logger: Logger): Promise<boolean> => {
+  init = async (provider: Provider): Promise<boolean> => {
     this.provider = provider;
-    this.logger = logger;
 
     const { device } = this.provider.getConfig();
 
     this.device = DeviceRepository.getInstance().getDeviceById(device) as ModbusDevice;
 
     if (!this.device) {
-      this.logger.error('Device not found');
+      this.provider.logger.error('Device not found');
       return false;
     }
 
-    this.logger.trace('Initializing ', this.device.name);
+    this.provider.logger.trace('Initializing ', this.device.name);
 
     this.setAvailability(false);
 
@@ -42,7 +40,7 @@ class ModbusSolarman implements Device {
 
   setAvailability = async (availability: boolean): Promise<void> => {
     if (this.reachable !== availability) {
-      this.logger.trace('Setting availability:', availability);
+      this.provider.logger.trace('Setting availability:', availability);
 
       this.reachable = availability;
       this.provider.setAvailability(this.reachable);
@@ -50,40 +48,40 @@ class ModbusSolarman implements Device {
   };
 
   start = async (): Promise<void> => {
-    this.logger.info('Starting ModbusSolarman');
+    this.provider.logger.info('Starting ModbusSolarman');
 
     await this.connect();
   };
 
   valueChanged = async (attribute: string, value: any): Promise<void> => {
-    this.logger.trace(`Attribute ${attribute} changed to ${value}`);
+    this.provider.logger.trace(`Attribute ${attribute} changed to ${value}`);
   };
 
   stop = async (): Promise<void> => {
-    this.logger.info('Stopping ModbusSolarman');
+    this.provider.logger.info('Stopping ModbusSolarman');
 
     if (this.api?.isConnected()) {
-      this.logger.trace('Closing modbus connection');
+      this.provider.logger.trace('Closing modbus connection');
       this.api.disconnect();
     }
   };
 
   destroy = async (): Promise<void> => {
-    this.logger.trace('Destroying ModbusSolarman');
+    this.provider.logger.trace('Destroying ModbusSolarman');
   };
 
   private onError = async (error: unknown, register: ModbusRegister): Promise<void> => {
     if (error && (error as any)['name'] && (error as any)['name'] === 'TransactionTimedOutError') {
       await this.setAvailability(false);
     } else {
-      this.logger.error('Request failed', error);
+      this.provider.logger.error('Request failed', error);
     }
   };
 
   private onDataReceived = async (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => {
-    const result = parseConfiguration.calculateValue(value, buffer, this.logger);
+    const result = parseConfiguration.calculateValue(value, buffer, this.provider.logger);
 
-    const validationResult = parseConfiguration.validateValue(result, this.logger);
+    const validationResult = parseConfiguration.validateValue(result, this.provider.logger);
     if (validationResult.valid) {
       this.lastValidRequest = DateTime.utc();
 
@@ -97,7 +95,7 @@ class ModbusSolarman implements Device {
   };
 
   private onDisconnect = async (): Promise<void> => {
-    this.logger.warn('Disconnected');
+    this.provider.logger.warn('Disconnected');
 
     if (this.readRegisterTimeout) {
       clearTimeout(this.readRegisterTimeout);
@@ -111,7 +109,7 @@ class ModbusSolarman implements Device {
     const isOpen = this.api.connect();
 
     if (!isOpen) {
-      this.logger.error('Failed to reconnect, reconnecting in 60 seconds');
+      this.provider.logger.error('Failed to reconnect, reconnecting in 60 seconds');
 
       await this.provider.setAvailability(false);
 
@@ -126,7 +124,7 @@ class ModbusSolarman implements Device {
 
   private readRegisters = async (): Promise<void> => {
     if (!this.api) {
-      this.logger.error('ModbusAPI is not initialized');
+      this.provider.logger.error('ModbusAPI is not initialized');
       return;
     }
 
@@ -148,7 +146,7 @@ class ModbusSolarman implements Device {
     try {
       await this.api.readRegistersInBatch();
     } catch (error: Error | any) {
-      this.logger.error('Failed to read registers', error);
+      this.provider.logger.error('Failed to read registers', error);
       await this.setAvailability(false);
 
       if (error && error.name && error.name === 'PortNotOpenError') {
@@ -162,7 +160,7 @@ class ModbusSolarman implements Device {
     const interval = this.reachable ? (updateInterval < 5 ? 5 : updateInterval) * 1000 : 60000;
 
     if (!this.reachable) {
-      this.logger.warn('Device is not reachable, retrying in 60 seconds');
+      this.provider.logger.warn('Device is not reachable, retrying in 60 seconds');
     }
 
     this.readRegisterTimeout = await setTimeout(this.readRegisters.bind(this), interval);
@@ -177,9 +175,9 @@ class ModbusSolarman implements Device {
       clearTimeout(this.readRegisterTimeout);
     }
 
-    this.logger.trace(`Connecting to ${host}:${port} with unitId ${unitId} (solarman: ${solarman}, serial: ${serial})`);
+    this.provider.logger.trace(`Connecting to ${host}:${port} with unitId ${unitId} (solarman: ${solarman}, serial: ${serial})`);
 
-    this.api = solarman ? new Solarman(this.logger, this.device, host, serial, 8899, 1) : new ModbusAPI(this.logger, host, port, unitId, this.device);
+    this.api = solarman ? new Solarman(this.provider.logger, this.device, host, serial, 8899, 1) : new ModbusAPI(this.provider.logger, host, port, unitId, this.device);
 
     this.api?.setOnError(this.onError);
     this.api?.setOnDisconnect(this.onDisconnect);
