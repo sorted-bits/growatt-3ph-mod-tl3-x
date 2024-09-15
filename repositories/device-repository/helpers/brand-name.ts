@@ -5,7 +5,7 @@
  * Non-commercial use only
  */
 
-import { DeviceRepository } from '../../device-repository/device-repository';
+import { DeviceRepository } from '../device-repository';
 import { Brand } from '../models/enum/brand';
 
 /**
@@ -14,7 +14,7 @@ import { Brand } from '../models/enum/brand';
  * @returns The corresponding Brand enum value, or undefined if no match is found.
  */
 export const getBrand = (brandName: string): Brand | undefined => {
-    return (Object.values(Brand) as unknown as string[]).includes(brandName) ? (brandName as unknown as Brand) : undefined;
+  return (Object.values(Brand) as unknown as string[]).includes(brandName) ? (brandName as unknown as Brand) : undefined;
 };
 
 /**
@@ -26,25 +26,25 @@ export const getBrand = (brandName: string): Brand | undefined => {
  * @returns The device model name or a string indicating an unknown device.
  */
 export const getDeviceModelName = (brandName: Brand, modelId: string): string => {
-    const model = DeviceRepository.getInstance().getDeviceById(modelId);
+  const model = DeviceRepository.getInstance().getDeviceById(modelId);
 
-    if (model) {
-        return model.name;
-    }
+  if (model) {
+    return model.name;
+  }
 
-    const output = brandName.charAt(0).toUpperCase() + brandName.slice(1);
-    return `Unknown ${output} device`;
+  const output = brandName.charAt(0).toUpperCase() + brandName.slice(1);
+  return `Unknown ${output} device`;
 };
 
 export const brandToBrandName = (brand: Brand): string => {
-    switch (brand) {
-        case Brand.Afore:
-            return 'Afore';
-        case Brand.Growatt:
-            return 'Growatt';
-        case Brand.Deye:
-            return 'Deye';
-        default:
-            return 'Unknown';
-    }
+  switch (brand) {
+    case Brand.Afore:
+      return 'Afore';
+    case Brand.Growatt:
+      return 'Growatt';
+    case Brand.Deye:
+      return 'Deye';
+    default:
+      return 'Unknown';
+  }
 };
