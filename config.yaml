@@ -1,4 +1,4 @@
-module:
+package:
   name: modbus-solarman
   version: 1.0.0
   description: QuantumHub module for Growatt and Afore inverters
