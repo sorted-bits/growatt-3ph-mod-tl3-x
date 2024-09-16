@@ -2,15 +2,9 @@ import { Logger } from 'quantumhub-sdk';
 import { writeBitsToBufferBE } from '../../helpers/bits';
 import { validateValue } from '../../helpers/validate-value';
 import { createRegisterBatches } from '../../repositories/device-repository/helpers/register-batches';
-import {
-  bufferForDataType,
-  lengthForDataType,
-} from '../../repositories/device-repository/models/enum/register-datatype';
+import { bufferForDataType, lengthForDataType } from '../../repositories/device-repository/models/enum/register-datatype';
 import { RegisterType } from '../../repositories/device-repository/models/enum/register-type';
-import {
-  ModbusRegister,
-  ModbusRegisterParseConfiguration,
-} from '../../repositories/device-repository/models/modbus-register';
+import { ModbusRegister, ModbusRegisterParseConfiguration } from '../../repositories/device-repository/models/modbus-register';
 import { IAPI } from '../iapi';
 import { calculateBufferCRC } from './helpers/buffer-crc-calculator';
 import { parseResponse } from './helpers/response-parser';
@@ -34,11 +28,7 @@ export class Solarman implements IAPI {
 
   private device: ModbusDevice;
   private frameDefinition: FrameDefinition;
-  private onDataReceived?: (
-    value: any,
-    buffer: Buffer,
-    parseConfiguration: ModbusRegisterParseConfiguration
-  ) => Promise<void>;
+  private onDataReceived?: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>;
   onError?: (error: unknown, register: ModbusRegister) => Promise<void>;
   onDisconnect?: () => Promise<void>;
 
@@ -46,9 +36,7 @@ export class Solarman implements IAPI {
     return true;
   }
 
-  setOnDataReceived(
-    onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>
-  ): void {
+  setOnDataReceived(onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>): void {
     this.onDataReceived = onDataReceived;
   }
 
@@ -70,15 +58,7 @@ export class Solarman implements IAPI {
    * @param {number} timeout Socket timeout in seconds (default: 60)
    * @memberof Solarman
    */
-  constructor(
-    log: Logger,
-    device: ModbusDevice,
-    ipAddress: string,
-    serialNumber: string,
-    port: number = 8899,
-    slaveId: number = 1,
-    timeout: number = 5
-  ) {
+  constructor(log: Logger, device: ModbusDevice, ipAddress: string, serialNumber: string, port: number = 8899, slaveId: number = 1, timeout: number = 5) {
     this.ipAddress = ipAddress;
     this.port = port;
     this.serialNumber = serialNumber;
@@ -98,19 +78,7 @@ export class Solarman implements IAPI {
   }
 
   connect(): Promise<boolean> {
-    this.log.info(
-      'Connecting Solarman to ',
-      this.ipAddress,
-      'on port',
-      this.port,
-      'with serial number',
-      this.serialNumber,
-      'and slave ID',
-      this.slaveId,
-      'and timeout',
-      this.timeout,
-      'seconds'
-    );
+    this.log.info('Connecting Solarman to ', this.ipAddress, 'on port', this.port, 'with serial number', this.serialNumber, 'and slave ID', this.slaveId, 'and timeout', this.timeout, 'seconds');
 
     return Promise.resolve(true);
   }
@@ -263,11 +231,15 @@ export class Solarman implements IAPI {
 
     // this.fakeBatches(this.deviceModel.definition.inputRegisters); //
     const inputBatches = createRegisterBatches(this.log, this.device.inputRegisters);
+    this.log.trace('Reading input registers using batches', inputBatches.length);
+
     for (const batch of inputBatches) {
       await this.readBatch(batch);
     }
 
     const holidingBatches = createRegisterBatches(this.log, this.device.holdingRegisters);
+    this.log.trace('Reading holding registers using batches', holidingBatches.length);
+
     for (const batch of holidingBatches) {
       await this.readBatch(batch);
     }
@@ -335,14 +307,7 @@ export class Solarman implements IAPI {
             this.log.error('Invalid value', convertedValue, register.registerType, value.length, register.length);
           }
         } catch (error) {
-          this.log.error(
-            'Exception reading for address',
-            register.address,
-            register.dataType,
-            error,
-            value.length,
-            register.length
-          );
+          this.log.error('Exception reading for address', register.address, register.dataType, error, value.length, register.length);
         }
       }
     } catch (error) {

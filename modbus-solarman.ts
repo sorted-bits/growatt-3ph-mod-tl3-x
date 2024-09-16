@@ -87,6 +87,8 @@ class ModbusSolarman implements Device {
 
       await this.provider.setAttributeValue(parseConfiguration.capabilityId, result);
       parseConfiguration.currentValue = result;
+    } else {
+      this.provider.logger.error('Invalid value received', value, buffer);
     }
 
     if (!this.reachable) {
@@ -117,6 +119,7 @@ class ModbusSolarman implements Device {
         this.onDisconnect();
       }, 60000);
     } else {
+      this.provider.logger.trace('Reconnected to device');
       await this.provider.setAvailability(true);
       await this.readRegisters();
     }
@@ -128,12 +131,15 @@ class ModbusSolarman implements Device {
       return;
     }
 
+    this.provider.logger.trace('Reading registers');
+
     this.lastRequest = DateTime.utc();
 
     const diff = this.lastValidRequest ? this.lastRequest.diff(this.lastValidRequest, 'minutes').minutes : 0;
     const { updateInterval } = this.provider.getConfig();
 
     if (diff > Math.max(2, updateInterval / 60)) {
+      this.provider.logger.warn('Device is not reachable, retrying in 60 seconds');
       await this.provider.setAvailability(false);
     }
 
