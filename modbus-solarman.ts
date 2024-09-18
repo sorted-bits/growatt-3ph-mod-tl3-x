@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { Device, Provider } from 'quantumhub-sdk';
+import { Attribute, Device, Provider, SelectAttribute } from 'quantumhub-sdk';
 import { IAPI } from './api/iapi';
 import { ModbusAPI } from './api/modbus/modbus-api';
 import { Solarman } from './api/solarman/solarman';
@@ -53,15 +53,22 @@ class ModbusSolarman implements Device {
     await this.connect();
   };
 
-  valueChanged = async (attribute: string, value: any): Promise<void> => {
-    this.provider.logger.trace(`Attribute ${attribute} changed to ${value}`);
-
-    if (attribute === 'ems_mode') {
+  onSelectChanged = async (attribute: SelectAttribute, value: string): Promise<void> => {
+    if (attribute.key === 'ems_mode') {
       this.provider.logger.info('EMS mode changed to', value);
     }
   };
 
+  valueChanged = async (attribute: Attribute, value: any): Promise<void> => {
+    this.provider.logger.trace(`Attribute ${attribute} changed to ${value}`);
+  };
+
   stop = async (): Promise<void> => {
+    if (this.readRegisterTimeout) {
+      clearTimeout(this.readRegisterTimeout);
+      this.readRegisterTimeout = undefined;
+    }
+
     this.provider.logger.info('Stopping ModbusSolarman');
 
     if (this.api?.isConnected()) {
