@@ -24,7 +24,7 @@ export const holdingRegisters: ModbusRegister[] = [
       return 'Disabled';
     }),
 
-  ModbusRegister.default('status_code_run_mode', 2500, 1, RegisterDataType.UINT16, AccessMode.ReadWrite).addTransform('status_text_ems_mode', (value) => {
+  ModbusRegister.default('status_code_run_mode', 2500, 1, RegisterDataType.UINT16, AccessMode.ReadWrite).addTransform('ems_mode', (value) => {
     switch (value) {
       case 0:
         return 'Self-use';

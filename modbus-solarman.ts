@@ -55,6 +55,10 @@ class ModbusSolarman implements Device {
 
   valueChanged = async (attribute: string, value: any): Promise<void> => {
     this.provider.logger.trace(`Attribute ${attribute} changed to ${value}`);
+
+    if (attribute === 'ems_mode') {
+      this.provider.logger.info('EMS mode changed to', value);
+    }
   };
 
   stop = async (): Promise<void> => {

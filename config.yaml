@@ -22,10 +22,6 @@ attributes:
     name: Charge Command
     type: sensor
 
-  status_text_ems_mode:
-    name: EMS Mode
-    type: sensor
-
   status_text_battery_state:
     name: Battery State
     type: sensor
@@ -215,3 +211,18 @@ attributes:
     type: sensor
     state_class: measurement
     unit_of_measurement: '%'
+
+  ems_mode:
+    name: EMS Mode
+    type: select
+    optimistic: true
+    options:
+      - Self-use
+      - Charging priority
+      - Priority in selling electricity
+      - Battery maintenance
+      - Command mode
+      - External EMS
+      - Peak Shaving Mode
+      - Imbalance compensation
+      - Q compensation mode
