@@ -65,7 +65,7 @@ class ModbusSolarman implements Device {
 
   stop = async (): Promise<void> => {
     if (this.readRegisterTimeout) {
-      clearTimeout(this.readRegisterTimeout);
+      this.provider.clearTimeout(this.readRegisterTimeout);
       this.readRegisterTimeout = undefined;
     }
 
@@ -111,7 +111,7 @@ class ModbusSolarman implements Device {
     this.provider.logger.warn('Disconnected');
 
     if (this.readRegisterTimeout) {
-      clearTimeout(this.readRegisterTimeout);
+      this.provider.clearTimeout(this.readRegisterTimeout);
       this.readRegisterTimeout = undefined;
     }
 
@@ -126,7 +126,7 @@ class ModbusSolarman implements Device {
 
       await this.provider.setAvailability(false);
 
-      this.readRegisterTimeout = setTimeout(() => {
+      this.readRegisterTimeout = this.provider.setTimeout(() => {
         this.onDisconnect();
       }, 60000);
     } else {
@@ -155,7 +155,11 @@ class ModbusSolarman implements Device {
     }
 
     while (this.runningRequest) {
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) =>
+        this.provider.setTimeout(() => {
+          resolve(true);
+        }, 200)
+      );
     }
 
     this.runningRequest = true;
@@ -180,7 +184,7 @@ class ModbusSolarman implements Device {
       this.provider.logger.warn('Device is not reachable, retrying in 60 seconds');
     }
 
-    this.readRegisterTimeout = await setTimeout(this.readRegisters.bind(this), interval);
+    this.readRegisterTimeout = await this.provider.setTimeout(this.readRegisters.bind(this), interval);
   };
 
   connect = async (): Promise<void> => {
@@ -189,7 +193,7 @@ class ModbusSolarman implements Device {
     const { host, port, unitId, solarman, serial } = this.provider.getConfig();
 
     if (this.readRegisterTimeout) {
-      clearTimeout(this.readRegisterTimeout);
+      this.provider.clearTimeout(this.readRegisterTimeout);
     }
 
     this.provider.logger.trace(`Connecting to ${host}:${port} with unitId ${unitId} (solarman: ${solarman}, serial: ${serial})`);
