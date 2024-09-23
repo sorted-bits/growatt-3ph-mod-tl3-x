@@ -18,6 +18,7 @@ class ModbusSolarman implements Device {
   private runningRequest: boolean = false;
 
   private readRegisterTimeout: undefined | ReturnType<typeof setTimeout>;
+  private isRunningIntervalTimeout: undefined | ReturnType<typeof setTimeout>;
 
   init = async (provider: Provider): Promise<boolean> => {
     this.provider = provider;
@@ -67,6 +68,11 @@ class ModbusSolarman implements Device {
     if (this.readRegisterTimeout) {
       this.provider.clearTimeout(this.readRegisterTimeout);
       this.readRegisterTimeout = undefined;
+    }
+
+    if (this.isRunningIntervalTimeout) {
+      this.provider.clearTimeout(this.isRunningIntervalTimeout);
+      this.isRunningIntervalTimeout = undefined;
     }
 
     this.provider.logger.info('Stopping ModbusSolarman');
@@ -126,9 +132,7 @@ class ModbusSolarman implements Device {
 
       await this.provider.setAvailability(false);
 
-      this.readRegisterTimeout = this.provider.setTimeout(() => {
-        this.onDisconnect();
-      }, 60000);
+      this.readRegisterTimeout = await this.provider.setTimeout(this.onDisconnect.bind(this), 60000);
     } else {
       this.provider.logger.trace('Reconnected to device');
       await this.provider.setAvailability(true);
@@ -155,10 +159,11 @@ class ModbusSolarman implements Device {
     }
 
     while (this.runningRequest) {
-      await new Promise((resolve) =>
-        this.provider.setTimeout(() => {
-          resolve(true);
-        }, 200)
+      await new Promise(
+        (resolve) =>
+          (this.isRunningIntervalTimeout = this.provider.setTimeout(async (): Promise<void> => {
+            resolve(true);
+          }, 500))
       );
     }
 
@@ -184,7 +189,7 @@ class ModbusSolarman implements Device {
       this.provider.logger.warn('Device is not reachable, retrying in 60 seconds');
     }
 
-    this.readRegisterTimeout = await this.provider.setTimeout(this.readRegisters.bind(this), interval);
+    this.readRegisterTimeout = this.provider.setTimeout(this.readRegisters.bind(this), interval);
   };
 
   connect = async (): Promise<void> => {
