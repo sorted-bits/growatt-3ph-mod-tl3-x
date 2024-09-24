@@ -119,14 +119,14 @@ attributes:
   meter_power_today:
     name: Power Today
     type: sensor
-    device_class: power
+    device_class: energy
     state_class: total_increasing
     unit_of_measurement: kWh
 
   meter_power:
     name: Power Total
     type: sensor
-    device_class: power
+    device_class: energy
     state_class: total
     unit_of_measurement: kWh
 
@@ -154,28 +154,28 @@ attributes:
   meter_power_daily_battery_charge:
     name: Daily Battery Charge
     type: sensor
-    device_class: power
+    device_class: energy
     state_class: total_increasing
     unit_of_measurement: kWh
 
   meter_power_daily_battery_discharge:
     name: Daily Battery Discharge
     type: sensor
-    device_class: power
+    device_class: energy
     state_class: total_increasing
     unit_of_measurement: kWh
 
   meter_power_total_battery_charge:
     name: Total Battery Charge
     type: sensor
-    device_class: power
+    device_class: energy
     state_class: total
     unit_of_measurement: kWh
 
   meter_power_total_battery_discharge:
     name: Total Battery Discharge
     type: sensor
-    device_class: power
+    device_class: energy
     state_class: total
     unit_of_measurement: kWh
 
