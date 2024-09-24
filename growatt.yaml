@@ -1,0 +1,92 @@
+package:
+  name: growatt
+  version: 1.0.0
+  description: QuantumHub module for Growatt TL and TL3 series
+  author: Wim Haanstra
+  entry: modbus-solarman.ts
+
+attributes:
+  serial:
+    name: Serial
+    type: sensor
+
+  status_code_run_mode:
+    name: Run Mode
+    type: sensor
+
+  measure_voltage_pv1:
+    name: Voltage PV1
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_voltage_pv2:
+    name: Voltage PV1
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_voltage_grid_l1:
+    name: Voltage L1
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_voltage_grid_l2:
+    name: Voltage L2
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_voltage_grid_l3:
+    name: Voltage L3
+    type: sensor
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: V
+
+  measure_power:
+    name: Power
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_ac:
+    name: Power AC
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_pv1:
+    name: Power PV1
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  measure_power_pv2:
+    name: Power PV2
+    type: sensor
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: W
+
+  meter_power_today:
+    name: Power Today
+    type: sensor
+    device_class: energy
+    state_class: total_increasing
+    unit_of_measurement: kWh
+
+  meter_power:
+    name: Power Total
+    type: sensor
+    device_class: energy
+    state_class: total
+    unit_of_measurement: kWh
