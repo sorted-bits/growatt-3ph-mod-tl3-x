@@ -183,7 +183,7 @@ class ModbusSolarman implements Device {
       this.runningRequest = false;
     }
 
-    const interval = this.reachable ? (updateInterval < 5 ? 5 : updateInterval) * 1000 : 60000;
+    const interval = this.reachable ? Math.max(updateInterval, 2) * 1000 : 60000;
 
     if (!this.reachable) {
       this.provider.logger.warn('Device is not reachable, retrying in 60 seconds');
