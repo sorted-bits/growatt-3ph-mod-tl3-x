@@ -25,6 +25,7 @@ export class Solarman implements IAPI {
   private slaveId: number;
   private timeout: number;
   private log: Logger;
+  private isStopping: boolean = false;
 
   private device: ModbusDevice;
   private frameDefinition: FrameDefinition;
@@ -38,6 +39,10 @@ export class Solarman implements IAPI {
 
   setOnDataReceived(onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>): void {
     this.onDataReceived = onDataReceived;
+  }
+
+  setIsStopping(isStopping: boolean): void {
+    this.isStopping = isStopping;
   }
 
   setOnError(onError: (error: unknown, register: ModbusRegister) => Promise<void>): void {

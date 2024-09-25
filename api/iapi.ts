@@ -1,15 +1,12 @@
 import { ModbusDevice } from '../repositories/device-repository/models/modbus-device';
-import {
-  ModbusRegister,
-  ModbusRegisterParseConfiguration,
-} from '../repositories/device-repository/models/modbus-register';
+import { ModbusRegister, ModbusRegisterParseConfiguration } from '../repositories/device-repository/models/modbus-register';
 
 export interface IAPI {
   getDeviceModel(): ModbusDevice;
 
-  setOnDataReceived(
-    onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>
-  ): void;
+  setIsStopping(isStopping: boolean): void;
+
+  setOnDataReceived(onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>): void;
   setOnError(onError: (error: unknown, register: ModbusRegister) => Promise<void>): void;
   setOnDisconnect(onDisconnect: () => Promise<void>): void;
 

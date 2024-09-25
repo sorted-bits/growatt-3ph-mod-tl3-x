@@ -29,6 +29,7 @@ export class ModbusAPI implements IAPI {
   private log: Logger;
   private device: ModbusDevice;
   private disconnecting: boolean = false;
+  private isStopping: boolean = false;
 
   isConnected(): boolean {
     return this.client.isOpen;
@@ -36,6 +37,10 @@ export class ModbusAPI implements IAPI {
 
   getDeviceModel(): ModbusDevice {
     return this.device;
+  }
+
+  setIsStopping(isStopping: boolean): void {
+    this.isStopping = isStopping;
   }
 
   setOnDataReceived(onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>): void {
@@ -353,7 +358,7 @@ export class ModbusAPI implements IAPI {
     } catch (error: any) {
       if (!error.name || error.name !== 'TransactionTimedOutError') {
         this.log.error('Error reading batch', JSON.stringify(error));
-        if (!this.client.isOpen) {
+        if (!this.client.isOpen && !this.isStopping) {
           this.disconnecting = true;
 
           this.disconnect();

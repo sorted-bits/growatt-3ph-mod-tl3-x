@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon';
 import { Attribute, Device, Provider, SelectAttribute } from 'quantumhub-sdk';
 import { IAPI } from './api/iapi';
 import { ModbusAPI } from './api/modbus/modbus-api';
@@ -11,14 +10,12 @@ class ModbusSolarman implements Device {
   private provider!: Provider;
 
   private api?: IAPI;
-  private reachable: boolean = false;
+  private availability: boolean = false;
   private device!: ModbusDevice;
-  private lastRequest?: DateTime;
-  private lastValidRequest?: DateTime;
   private runningRequest: boolean = false;
+  private isStopping: boolean = false;
 
   private readRegisterTimeout: undefined | ReturnType<typeof setTimeout>;
-  private isRunningIntervalTimeout: undefined | ReturnType<typeof setTimeout>;
 
   init = async (provider: Provider): Promise<boolean> => {
     this.provider = provider;
@@ -40,15 +37,18 @@ class ModbusSolarman implements Device {
   };
 
   setAvailability = async (availability: boolean): Promise<void> => {
-    if (this.reachable !== availability) {
+    if (this.availability !== availability) {
       this.provider.logger.trace('Setting availability:', availability);
 
-      this.reachable = availability;
-      this.provider.setAvailability(this.reachable);
+      this.availability = availability;
+      this.provider.setAvailability(this.availability);
     }
   };
 
   start = async (): Promise<void> => {
+    this.isStopping = false;
+    this.api?.setIsStopping(false);
+
     this.provider.logger.info('Starting ModbusSolarman');
 
     await this.connect();
@@ -65,26 +65,27 @@ class ModbusSolarman implements Device {
   };
 
   stop = async (): Promise<void> => {
+    this.provider.logger.info('Stopping ModbusSolarman');
+    await this.cleanUp();
+  };
+
+  destroy = async (): Promise<void> => {
+    this.provider.logger.trace('Destroying ModbusSolarman');
+    await this.cleanUp();
+  };
+
+  private cleanUp = async (): Promise<void> => {
+    this.isStopping = true;
+    this.api?.setIsStopping(true);
     if (this.readRegisterTimeout) {
       this.provider.clearTimeout(this.readRegisterTimeout);
       this.readRegisterTimeout = undefined;
     }
 
-    if (this.isRunningIntervalTimeout) {
-      this.provider.clearTimeout(this.isRunningIntervalTimeout);
-      this.isRunningIntervalTimeout = undefined;
-    }
-
-    this.provider.logger.info('Stopping ModbusSolarman');
-
     if (this.api?.isConnected()) {
       this.provider.logger.trace('Closing modbus connection');
       this.api.disconnect();
     }
-  };
-
-  destroy = async (): Promise<void> => {
-    this.provider.logger.trace('Destroying ModbusSolarman');
   };
 
   private onError = async (error: unknown, register: ModbusRegister): Promise<void> => {
@@ -100,17 +101,13 @@ class ModbusSolarman implements Device {
 
     const validationResult = parseConfiguration.validateValue(result, this.provider.logger);
     if (validationResult.valid) {
-      this.lastValidRequest = DateTime.utc();
-
       await this.provider.setAttributeValue(parseConfiguration.capabilityId, result);
       parseConfiguration.currentValue = result;
     } else {
       this.provider.logger.error('Invalid value received', value, buffer);
     }
 
-    if (!this.reachable) {
-      this.setAvailability(true);
-    }
+    this.setAvailability(true);
   };
 
   private onDisconnect = async (): Promise<void> => {
@@ -141,6 +138,11 @@ class ModbusSolarman implements Device {
   };
 
   private readRegisters = async (): Promise<void> => {
+    if (this.readRegisterTimeout) {
+      this.provider.clearTimeout(this.readRegisterTimeout);
+      this.readRegisterTimeout = undefined;
+    }
+
     if (!this.api) {
       this.provider.logger.error('ModbusAPI is not initialized');
       return;
@@ -148,29 +150,18 @@ class ModbusSolarman implements Device {
 
     this.provider.logger.trace('Reading registers');
 
-    this.lastRequest = DateTime.utc();
-
-    const diff = this.lastValidRequest ? this.lastRequest.diff(this.lastValidRequest, 'minutes').minutes : 0;
     const { updateInterval } = this.provider.getConfig();
 
-    if (diff > Math.max(2, updateInterval / 60)) {
-      this.provider.logger.warn('Device is not reachable, retrying in 60 seconds');
-      await this.provider.setAvailability(false);
-    }
-
-    while (this.runningRequest) {
-      await new Promise(
-        (resolve) =>
-          (this.isRunningIntervalTimeout = this.provider.setTimeout(async (): Promise<void> => {
-            resolve(true);
-          }, 500))
-      );
+    if (this.runningRequest) {
+      this.readRegisterTimeout = this.provider.setTimeout(this.readRegisters.bind(this), 500);
+      return;
     }
 
     this.runningRequest = true;
 
     try {
       await this.api.readRegistersInBatch();
+      this.setAvailability(true);
     } catch (error: Error | any) {
       this.provider.logger.error('Failed to read registers', error);
       await this.setAvailability(false);
@@ -181,15 +172,17 @@ class ModbusSolarman implements Device {
       }
     } finally {
       this.runningRequest = false;
+
+      const interval = this.availability ? Math.max(updateInterval, 2) * 1000 : 60000;
+
+      if (!this.availability) {
+        this.provider.logger.warn('Device is not reachable, retrying in 60 seconds');
+      }
+
+      if (!this.isStopping) {
+        this.readRegisterTimeout = this.provider.setTimeout(this.readRegisters.bind(this), interval);
+      }
     }
-
-    const interval = this.reachable ? Math.max(updateInterval, 2) * 1000 : 60000;
-
-    if (!this.reachable) {
-      this.provider.logger.warn('Device is not reachable, retrying in 60 seconds');
-    }
-
-    this.readRegisterTimeout = this.provider.setTimeout(this.readRegisters.bind(this), interval);
   };
 
   connect = async (): Promise<void> => {
