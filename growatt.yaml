@@ -55,6 +55,7 @@ attributes:
     device_class: power
     state_class: measurement
     unit_of_measurement: W
+    unavailability_value: 0
 
   measure_power_ac:
     name: Power AC
