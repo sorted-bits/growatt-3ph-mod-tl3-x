@@ -29,7 +29,6 @@ export class ModbusAPI implements IAPI {
   private log: Logger;
   private device: ModbusDevice;
   private disconnecting: boolean = false;
-  private isStopping: boolean = false;
 
   isConnected(): boolean {
     return this.client.isOpen;
@@ -37,10 +36,6 @@ export class ModbusAPI implements IAPI {
 
   getDeviceModel(): ModbusDevice {
     return this.device;
-  }
-
-  setIsStopping(isStopping: boolean): void {
-    this.isStopping = isStopping;
   }
 
   setOnDataReceived(onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>): void {
@@ -149,7 +144,7 @@ export class ModbusAPI implements IAPI {
    */
   disconnect = () => {
     this.disconnecting = true;
-    this.client.close(() => {});
+    this.client.close(() => { });
   };
 
   /**
@@ -335,39 +330,24 @@ export class ModbusAPI implements IAPI {
 
     const length = batch.length > 1 ? lastRegister.address + lastRegister.length - firstRegister.address : batch[0].length;
 
-    try {
-      const results = registerType === RegisterType.Input ? await this.client.readInputRegisters(firstRegister.address, length) : await this.client.readHoldingRegisters(firstRegister.address, length);
+    const results = registerType === RegisterType.Input ? await this.client.readInputRegisters(firstRegister.address, length) : await this.client.readHoldingRegisters(firstRegister.address, length);
 
-      let startOffset = 0;
-      for (const register of batch) {
-        const end = startOffset + register.length * 2;
-        const buffer = batch.length > 1 ? results.buffer.subarray(startOffset, end) : results.buffer;
+    let startOffset = 0;
+    for (const register of batch) {
+      const end = startOffset + register.length * 2;
+      const buffer = batch.length > 1 ? results.buffer.subarray(startOffset, end) : results.buffer;
 
-        const value = this.device.converter(this.log, buffer, register);
+      const value = this.device.converter(this.log, buffer, register);
 
-        if (validateValue(value, register.dataType)) {
-          for (const parseConfiguration of register.parseConfigurations) {
-            await this.onDataReceived!(value, buffer, parseConfiguration);
-          }
-        } else {
-          this.log.error('Invalid value', value, 'for address', register.address, register.dataType);
-        }
-
-        startOffset = end;
-      }
-    } catch (error: any) {
-      if (!error.name || error.name !== 'TransactionTimedOutError') {
-        this.log.error('Error reading batch', JSON.stringify(error));
-        if (!this.client.isOpen && !this.isStopping) {
-          this.disconnecting = true;
-
-          this.disconnect();
-          this.log.warn('Client connection was closed, reconnecting');
-          await this.connect();
+      if (validateValue(value, register.dataType)) {
+        for (const parseConfiguration of register.parseConfigurations) {
+          await this.onDataReceived!(value, buffer, parseConfiguration);
         }
       } else {
-        throw error;
+        this.log.error('Invalid value', value, 'for address', register.address, register.dataType);
       }
+
+      startOffset = end;
     }
   };
 

@@ -4,8 +4,6 @@ import { ModbusRegister, ModbusRegisterParseConfiguration } from '../repositorie
 export interface IAPI {
   getDeviceModel(): ModbusDevice;
 
-  setIsStopping(isStopping: boolean): void;
-
   setOnDataReceived(onDataReceived: (value: any, buffer: Buffer, parseConfiguration: ModbusRegisterParseConfiguration) => Promise<void>): void;
   setOnError(onError: (error: unknown, register: ModbusRegister) => Promise<void>): void;
   setOnDisconnect(onDisconnect: () => Promise<void>): void;

@@ -47,7 +47,6 @@ class ModbusSolarman implements Device {
 
   start = async (): Promise<void> => {
     this.isStopping = false;
-    this.api?.setIsStopping(false);
 
     this.provider.logger.info('Starting ModbusSolarman');
 
@@ -76,7 +75,6 @@ class ModbusSolarman implements Device {
 
   private cleanUp = async (): Promise<void> => {
     this.isStopping = true;
-    this.api?.setIsStopping(true);
     if (this.readRegisterTimeout) {
       this.provider.clearTimeout(this.readRegisterTimeout);
       this.readRegisterTimeout = undefined;
@@ -165,11 +163,6 @@ class ModbusSolarman implements Device {
     } catch (error: Error | any) {
       this.provider.logger.error('Failed to read registers', error);
       await this.setAvailability(false);
-
-      if (error && error.name && error.name === 'PortNotOpenError') {
-        await this.connect();
-        return;
-      }
     } finally {
       this.runningRequest = false;
 
@@ -180,7 +173,8 @@ class ModbusSolarman implements Device {
       }
 
       if (!this.isStopping) {
-        this.readRegisterTimeout = this.provider.setTimeout(this.readRegisters.bind(this), interval);
+        const methodToCall = this.api.isConnected() ? this.readRegisters.bind(this) : this.connect.bind(this);
+        this.readRegisterTimeout = this.provider.setTimeout(methodToCall, interval);
       }
     }
   };

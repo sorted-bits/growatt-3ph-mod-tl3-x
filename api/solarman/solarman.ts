@@ -41,10 +41,6 @@ export class Solarman implements IAPI {
     this.onDataReceived = onDataReceived;
   }
 
-  setIsStopping(isStopping: boolean): void {
-    this.isStopping = isStopping;
-  }
-
   setOnError(onError: (error: unknown, register: ModbusRegister) => Promise<void>): void {
     this.onError = onError;
   }
