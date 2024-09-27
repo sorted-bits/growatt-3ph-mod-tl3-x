@@ -330,24 +330,30 @@ export class ModbusAPI implements IAPI {
 
     const length = batch.length > 1 ? lastRegister.address + lastRegister.length - firstRegister.address : batch[0].length;
 
-    const results = registerType === RegisterType.Input ? await this.client.readInputRegisters(firstRegister.address, length) : await this.client.readHoldingRegisters(firstRegister.address, length);
+    try {
+      const results = registerType === RegisterType.Input ? await this.client.readInputRegisters(firstRegister.address, length) : await this.client.readHoldingRegisters(firstRegister.address, length);
 
-    let startOffset = 0;
-    for (const register of batch) {
-      const end = startOffset + register.length * 2;
-      const buffer = batch.length > 1 ? results.buffer.subarray(startOffset, end) : results.buffer;
+      let startOffset = 0;
+      for (const register of batch) {
+        const end = startOffset + register.length * 2;
+        const buffer = batch.length > 1 ? results.buffer.subarray(startOffset, end) : results.buffer;
 
-      const value = this.device.converter(this.log, buffer, register);
+        const value = this.device.converter(this.log, buffer, register);
 
-      if (validateValue(value, register.dataType)) {
-        for (const parseConfiguration of register.parseConfigurations) {
-          await this.onDataReceived!(value, buffer, parseConfiguration);
+        if (validateValue(value, register.dataType)) {
+          for (const parseConfiguration of register.parseConfigurations) {
+            await this.onDataReceived!(value, buffer, parseConfiguration);
+          }
+        } else {
+          this.log.error('Invalid value', value, 'for address', register.address, register.dataType);
         }
-      } else {
-        this.log.error('Invalid value', value, 'for address', register.address, register.dataType);
-      }
 
-      startOffset = end;
+        startOffset = end;
+      }
+    } catch (error: any) {
+      if (!error.name || error.name !== 'TransactionTimedOutError') {
+        throw error;
+      }
     }
   };
 
