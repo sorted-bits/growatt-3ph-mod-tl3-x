@@ -31,14 +31,14 @@ class ModbusSolarman implements Device {
 
     this.provider.logger.trace('Initializing ', this.device.name);
 
-    this.setAvailability(false);
+    this.setAvailability(true);
 
     return true;
   };
 
   setAvailability = async (availability: boolean): Promise<void> => {
     if (this.availability !== availability) {
-      this.provider.logger.trace('Setting availability:', availability);
+      this.provider.logger.info('Setting availability:', availability);
 
       this.availability = availability;
       this.provider.setAvailability(this.availability);
