@@ -161,7 +161,7 @@ class ModbusSolarman implements Device {
 
     try {
       await this.api.readRegistersInBatch();
-      this.setAvailability(true);
+      await this.setAvailability(true);
     } catch (error: Error | any) {
       this.provider.logger.error('Failed to read registers', error);
       await this.setAvailability(false);

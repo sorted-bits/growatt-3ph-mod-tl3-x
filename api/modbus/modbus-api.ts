@@ -365,6 +365,8 @@ export class ModbusAPI implements IAPI {
           this.log.warn('Client connection was closed, reconnecting');
           await this.connect();
         }
+      } else {
+        throw error;
       }
     }
   };
