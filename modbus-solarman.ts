@@ -184,7 +184,7 @@ class ModbusSolarman implements Device {
         }
 
         const diff = currentTime.diff(this.lastSuccessfullRead, 'seconds').seconds;
-        this.provider.logger.trace(`Last successful read was ${diff} seconds ago`);
+        this.provider.logger.trace(`Last successful read was ${Math.round(diff)} seconds ago, marking device as unavailable after ${unavailable_timeout} seconds`);
 
         if (diff > unavailable_timeout) {
           await this.setAvailability(false);
