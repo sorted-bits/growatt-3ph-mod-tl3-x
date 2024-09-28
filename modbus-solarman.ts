@@ -175,7 +175,14 @@ class ModbusSolarman implements Device {
       const currentTime = DateTime.now();
 
       if (error.name === 'TransactionTimedOutError') {
-        if (this.lastSuccessfullRead && currentTime.diff(this.lastSuccessfullRead, 'seconds').seconds > unavailable_timeout) {
+        if (!this.lastSuccessfullRead) {
+          this.lastSuccessfullRead = DateTime.now();
+        }
+
+        const diff = currentTime.diff(this.lastSuccessfullRead, 'seconds').seconds;
+        this.provider.logger.warn(`Last successful read was ${diff} seconds ago`);
+
+        if (diff > unavailable_timeout) {
           await this.setAvailability(false);
         }
       } else {
