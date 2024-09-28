@@ -5,6 +5,7 @@ import { Solarman } from './api/solarman/solarman';
 import { DeviceRepository } from './repositories/device-repository/device-repository';
 import { ModbusDevice } from './repositories/device-repository/models/modbus-device';
 import { ModbusRegister, ModbusRegisterParseConfiguration } from './repositories/device-repository/models/modbus-register';
+import { DateTime } from 'luxon';
 
 class ModbusSolarman implements Device {
   private provider!: Provider;
@@ -16,6 +17,8 @@ class ModbusSolarman implements Device {
   private isStopping: boolean = false;
 
   private readRegisterTimeout: undefined | ReturnType<typeof setTimeout>;
+
+  private lastSuccessfullRead?: DateTime
 
   init = async (provider: Provider): Promise<boolean> => {
     this.provider = provider;
@@ -32,6 +35,11 @@ class ModbusSolarman implements Device {
     this.provider.logger.trace('Initializing ', this.device.name);
 
     this.setAvailability(true);
+
+    const {lastSuccessfullRead} = await this.provider.cache.all();
+    if (lastSuccessfullRead) {
+      this.lastSuccessfullRead = DateTime.fromISO(lastSuccessfullRead);
+    }
 
     return true;
   };
@@ -76,7 +84,7 @@ class ModbusSolarman implements Device {
   private cleanUp = async (): Promise<void> => {
     this.isStopping = true;
     if (this.readRegisterTimeout) {
-      this.provider.clearTimeout(this.readRegisterTimeout);
+      this.provider.timeout.clear(this.readRegisterTimeout);
       this.readRegisterTimeout = undefined;
     }
 
@@ -105,6 +113,9 @@ class ModbusSolarman implements Device {
       this.provider.logger.error('Invalid value received', value, buffer);
     }
 
+    this.lastSuccessfullRead = DateTime.now();
+    this.provider.cache.set('lastSuccessfullRead', this.lastSuccessfullRead);
+
     this.setAvailability(true);
   };
 
@@ -112,7 +123,7 @@ class ModbusSolarman implements Device {
     this.provider.logger.warn('Disconnected');
 
     if (this.readRegisterTimeout) {
-      this.provider.clearTimeout(this.readRegisterTimeout);
+      this.provider.timeout.clear(this.readRegisterTimeout);
       this.readRegisterTimeout = undefined;
     }
 
@@ -127,7 +138,7 @@ class ModbusSolarman implements Device {
 
       await this.provider.setAvailability(false);
 
-      this.readRegisterTimeout = await this.provider.setTimeout(this.onDisconnect.bind(this), 60000);
+      this.readRegisterTimeout = await this.provider.timeout.set(this.onDisconnect.bind(this), 60000);
     } else {
       this.provider.logger.trace('Reconnected to device');
       await this.provider.setAvailability(true);
@@ -137,7 +148,7 @@ class ModbusSolarman implements Device {
 
   private readRegisters = async (): Promise<void> => {
     if (this.readRegisterTimeout) {
-      this.provider.clearTimeout(this.readRegisterTimeout);
+      this.provider.timeout.clear(this.readRegisterTimeout);
       this.readRegisterTimeout = undefined;
     }
 
@@ -148,10 +159,10 @@ class ModbusSolarman implements Device {
 
     this.provider.logger.trace('Reading registers');
 
-    const { updateInterval } = this.provider.getConfig();
+    const { updateInterval, unavailable_timeout } = this.provider.getConfig();
 
     if (this.runningRequest) {
-      this.readRegisterTimeout = this.provider.setTimeout(this.readRegisters.bind(this), 500);
+      this.readRegisterTimeout = this.provider.timeout.set(this.readRegisters.bind(this), 500);
       return;
     }
 
@@ -161,7 +172,15 @@ class ModbusSolarman implements Device {
       await this.api.readRegistersInBatch();
       await this.setAvailability(true);
     } catch (error: Error | any) {
-      this.provider.logger.error('Failed to read registers', error);
+      const currentTime = DateTime.now();
+
+      if (error.name === 'TransactionTimedOutError') {
+        if (this.lastSuccessfullRead && currentTime.diff(this.lastSuccessfullRead, 'seconds').seconds > unavailable_timeout) {
+          await this.setAvailability(false);
+        }
+      }
+
+      this.provider.logger.error('Failed to read registers', JSON.stringify(error));
       await this.setAvailability(false);
     } finally {
       this.runningRequest = false;
@@ -174,7 +193,7 @@ class ModbusSolarman implements Device {
 
       if (!this.isStopping) {
         const methodToCall = this.api.isConnected() ? this.readRegisters.bind(this) : this.connect.bind(this);
-        this.readRegisterTimeout = this.provider.setTimeout(methodToCall, interval);
+        this.readRegisterTimeout = this.provider.timeout.set(methodToCall, interval);
       }
     }
   };
@@ -185,7 +204,7 @@ class ModbusSolarman implements Device {
     const { host, port, unitId, solarman, serial } = this.provider.getConfig();
 
     if (this.readRegisterTimeout) {
-      this.provider.clearTimeout(this.readRegisterTimeout);
+      this.provider.timeout.clear(this.readRegisterTimeout);
     }
 
     this.provider.logger.trace(`Connecting to ${host}:${port} with unitId ${unitId} (solarman: ${solarman}, serial: ${serial})`);

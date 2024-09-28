@@ -16,6 +16,7 @@ import { RegisterType } from '../../repositories/device-repository/models/enum/r
 import { ModbusDevice } from '../../repositories/device-repository/models/modbus-device';
 import { ModbusRegister, ModbusRegisterParseConfiguration } from '../../repositories/device-repository/models/modbus-register';
 import { IAPI } from '../iapi';
+import { DateTime } from 'luxon';
 
 /**
  * Represents a Modbus API.
@@ -29,6 +30,7 @@ export class ModbusAPI implements IAPI {
   private log: Logger;
   private device: ModbusDevice;
   private disconnecting: boolean = false;
+
 
   isConnected(): boolean {
     return this.client.isOpen;
@@ -351,9 +353,8 @@ export class ModbusAPI implements IAPI {
         startOffset = end;
       }
     } catch (error: any) {
-      if (!error.name || error.name !== 'TransactionTimedOutError') {
-        throw error;
-      }
+      this.log.warn('Error reading batch', JSON.stringify(error));
+      throw error;
     }
   };
 
