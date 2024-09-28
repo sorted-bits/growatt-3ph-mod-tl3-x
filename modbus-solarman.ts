@@ -36,7 +36,7 @@ class ModbusSolarman implements Device {
 
     this.setAvailability(true);
 
-    const {lastSuccessfullRead} = await this.provider.cache.all();
+    const { lastSuccessfullRead } = await this.provider.cache.all();
     if (lastSuccessfullRead) {
       this.lastSuccessfullRead = DateTime.fromISO(lastSuccessfullRead);
     }
@@ -178,10 +178,10 @@ class ModbusSolarman implements Device {
         if (this.lastSuccessfullRead && currentTime.diff(this.lastSuccessfullRead, 'seconds').seconds > unavailable_timeout) {
           await this.setAvailability(false);
         }
+      } else {
+        this.provider.logger.error('Failed to read registers', JSON.stringify(error));
+        await this.setAvailability(false);
       }
-
-      this.provider.logger.error('Failed to read registers', JSON.stringify(error));
-      await this.setAvailability(false);
     } finally {
       this.runningRequest = false;
 
