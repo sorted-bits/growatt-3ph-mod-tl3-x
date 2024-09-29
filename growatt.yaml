@@ -91,3 +91,4 @@ attributes:
     device_class: energy
     state_class: total
     unit_of_measurement: kWh
+    availability: false
