@@ -42,6 +42,15 @@ class ModbusSolarman implements Device {
       if (!this.lastSuccessfullRead.isValid) {
         this.provider.logger.error('Could not parse lastSuccessfullRead from cache', lastSuccessfullRead);
         this.lastSuccessfullRead = undefined;
+      } else {
+        const { unavailable_timeout } = this.provider.getConfig();
+
+        const diff = DateTime.now().diff(this.lastSuccessfullRead, 'seconds').seconds;
+        this.provider.logger.trace(`Last successful read was ${Math.round(diff)} seconds ago, marking device as unavailable after ${unavailable_timeout} seconds`);
+
+        if (diff > unavailable_timeout) {
+          await this.setAvailability(false);
+        }
       }
     }
 
@@ -120,7 +129,7 @@ class ModbusSolarman implements Device {
     this.lastSuccessfullRead = DateTime.now();
     this.provider.cache.set('lastSuccessfullRead', this.lastSuccessfullRead.toISO());
 
-    this.setAvailability(true);
+    await this.setAvailability(true);
   };
 
   private onDisconnect = async (): Promise<void> => {
