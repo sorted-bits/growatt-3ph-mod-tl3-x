@@ -1,7 +1,7 @@
 package:
-  name: growatt
+  name: growatt-tl
   version: 1.0.0
-  description: QuantumHub module for Growatt TL and TL3 series
+  description: QuantumHub module for Growatt MID TL series
   author: Wim Haanstra
   entry: modbus-solarman.ts
 
@@ -30,20 +30,6 @@ attributes:
 
   measure_voltage_grid_l1:
     name: Voltage L1
-    type: sensor
-    device_class: voltage
-    state_class: measurement
-    unit_of_measurement: V
-
-  measure_voltage_grid_l2:
-    name: Voltage L2
-    type: sensor
-    device_class: voltage
-    state_class: measurement
-    unit_of_measurement: V
-
-  measure_voltage_grid_l3:
-    name: Voltage L3
     type: sensor
     device_class: voltage
     state_class: measurement
