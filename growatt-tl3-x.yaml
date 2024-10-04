@@ -1,9 +1,11 @@
 package:
-  name: growatt-tl3-x
+  name: Growatt MOD TL3-X series
+  identifier: growatt-mod-tl3-x
   version: 1.0.0
   description: QuantumHub module for Growatt MOD TL3-X series
   author: Wim Haanstra
   entry: modbus-solarman.ts
+  repository: https://github.com/sorted-bits/modbus-solarman
 
 attributes:
   serial:

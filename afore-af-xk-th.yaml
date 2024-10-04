@@ -1,9 +1,11 @@
 package:
-  name: afore
+  name: Afore AF XK-TH Three Phase Hybrid Inverter Series
+  identifier: afore-af-xk-th
   version: 1.0.0
   description: QuantumHub module for Afore AF XK-TH Three Phase Hybrid Inverter Serie
   author: Wim Haanstra
   entry: modbus-solarman.ts
+  repository: https://github.com/sorted-bits/modbus-solarman
 
 attributes:
   status_code_run_mode:
