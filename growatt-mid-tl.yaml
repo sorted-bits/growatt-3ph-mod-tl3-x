@@ -1,6 +1,5 @@
 package:
-  name: Growatt MID TL series
-  identifier: growatt-mid-tl
+  name: growatt-mid-tl
   version: 1.0.0
   description: QuantumHub module for Growatt MID TL series
   author: Wim Haanstra

@@ -1,6 +1,5 @@
 package:
-  name: Afore AF XK-TH Three Phase Hybrid Inverter Series
-  identifier: afore-af-xk-th
+  name: afore-af-xk-th
   version: 1.0.0
   description: QuantumHub module for Afore AF XK-TH Three Phase Hybrid Inverter Serie
   author: Wim Haanstra
